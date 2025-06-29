@@ -1,29 +1,46 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { useFonts } from 'expo-font';
-import { Stack } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
-import 'react-native-reanimated';
-
-import { useColorScheme } from '@/hooks/useColorScheme';
+import { MaterialIcons } from "@expo/vector-icons";
+import { Tabs } from "expo-router";
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
-  const [loaded] = useFonts({
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
-  });
-
-  if (!loaded) {
-    // Async font loading only occurs in development.
-    return null;
-  }
-
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="+not-found" />
-      </Stack>
-      <StatusBar style="auto" />
-    </ThemeProvider>
+    <Tabs>
+      <Tabs.Screen
+        name="index"
+        options={{
+          title: "Home",
+          headerTitle: "Overview",
+          headerTitleAlign: "center",
+          headerTitleStyle: {
+            fontSize: 20,
+            fontWeight: "bold",
+          },
+          tabBarIcon: () => <MaterialIcons name="home" size={24} />,
+        }}
+      />
+      <Tabs.Screen
+        name="history"
+        options={{
+          title: "History",
+          headerTitleAlign: "center",
+          headerTitleStyle: {
+            fontSize: 20,
+            fontWeight: "bold"
+          },
+          tabBarIcon: () => <MaterialIcons name="history" size={24} />,
+        }}
+      />
+      <Tabs.Screen
+        name="settings"
+        options={{
+          title: "Settings",
+          headerTitleAlign: "center",
+          headerTitleStyle: {
+            fontSize: 20,
+            fontWeight: "bold",
+          },
+          tabBarIcon: () => <MaterialIcons name="settings" size={24} />,
+        }}
+      />
+    </Tabs>
   );
 }
