@@ -9,16 +9,16 @@ const BudgetOverview = () => {
   });
 
   return (
-    <View style={{ flex: 1 }}>
+    <View>
       {/* Banner */}
       <View style={styles.banner}>
         <Text style={styles.date_label}>{displayDate}</Text>
         <View style={styles.balance}>
-          <Text style={styles.label}>Total Budget</Text>
+          <Text style={styles.label.total}>Total Budget</Text>
           <Text style={styles.amount}>300,000</Text>
         </View>
         <View style={styles.balance}>
-          <Text style={styles.label}>Total Remaining Budget</Text>
+          <Text style={styles.label.remain}>Total Remaining Budget</Text>
           <Text style={styles.amount}>300,000</Text>
         </View>
       </View>
@@ -26,16 +26,31 @@ const BudgetOverview = () => {
       {/* Small Cards */}
       <View style={styles.cardRow}>
         <View style={styles.card}>
-          <Text style={styles.cardLabel}>Daily Budget</Text>
-          <Text style={styles.cardAmount}>10,000</Text>
+          <Text style={styles.cardLabel.total}>Daily Budget</Text>
+          <Text
+            style={styles.cardAmount}
+            numberOfLines={1}
+            adjustsFontSizeToFit>
+            10,000
+          </Text>
         </View>
         <View style={styles.card}>
-          <Text style={styles.cardLabel}>Spent Today</Text>
-          <Text style={styles.cardAmount}>6,000</Text>
+          <Text style={styles.cardLabel.spent}>Spent Today</Text>
+          <Text
+            style={styles.cardAmount}
+            numberOfLines={1}
+            adjustsFontSizeToFit>
+            6,000
+          </Text>
         </View>
         <View style={styles.card}>
-          <Text style={styles.cardLabel}>Remaining</Text>
-          <Text style={styles.cardAmount}>4,000</Text>
+          <Text style={styles.cardLabel.remain}>Remaining</Text>
+          <Text
+            style={styles.cardAmount}
+            numberOfLines={1}
+            adjustsFontSizeToFit>
+            4,000
+          </Text>
         </View>
       </View>
     </View>
@@ -58,19 +73,27 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   date_label: {
-    fontSize: 17,
+    fontSize: 20,
     fontWeight: "600",
     color: "#FFFACD",
     textAlign: "center",
   },
   label: {
-    fontWeight: "600",
-    color: "#E0F2F1", 
+    total: {
+      fontSize: 18,
+      fontWeight: "600",
+      color: "#FFFACD",
+    },
+    remain: {
+      fontSize: 18,
+      fontWeight: "600",
+      color: "#FFFACD",
+    },
   },
   amount: {
     fontWeight: "bold",
     fontSize: 20,
-    color: "#FFFFFF", 
+    color: "#FFFFFF",
   },
   cardRow: {
     flexDirection: "row",
@@ -80,23 +103,36 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   card: {
-    backgroundColor: "#FFFFFF",
+    backgroundColor: "#f1f1f1",
     borderRadius: 10,
     padding: 15,
     alignItems: "center",
-    width: "30%",
+    flex: 1,
+    marginHorizontal: 5,
     shadowColor: "#000",
     shadowOpacity: 0.1,
     shadowRadius: 6,
     elevation: 4,
   },
   cardLabel: {
-    fontSize: 12,
-    fontWeight: "600",
-    color: "#00897B",
+    total: {
+      fontSize: 12,
+      fontWeight: "600",
+      color: "#1E3A8A",
+    },
+    spent: {
+      fontSize: 12,
+      fontWeight: "600",
+      color: "#DC2626",
+    },
+    remain: {
+      fontSize: 12,
+      fontWeight: "600",
+      color: "#065F46",
+    }
   },
   cardAmount: {
-    fontSize: 18,
+    fontSize: 14,
     fontWeight: "bold",
     color: "#1E293B",
     marginTop: 5,
