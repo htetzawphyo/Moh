@@ -1,139 +1,145 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import { FlatList, StyleSheet, Text, View } from "react-native";
 
-const ExpenseCard = () => {
+const Expenses = () => {
   const items = [
     {
       id: 1,
       name: "Starbucks",
-      category: "Coffee",
+      date: "2025-06-01",
       amount: -5000,
       icon: "coffee",
     },
     {
       id: 2,
       name: "Amazon",
-      category: "Shopping",
+      date: "2025-06-03",
       amount: -15000,
       icon: "shopping-cart",
     },
     {
       id: 3,
       name: "Uber",
-      category: "Transport",
+      date: "2025-06-05",
       amount: -3000,
       icon: "directions-car",
     },
     {
       id: 4,
       name: "Netflix",
-      category: "Entertainment",
+      date: "2025-06-07",
       amount: -12000,
       icon: "tv",
     },
     {
       id: 5,
       name: "Groceries",
-      category: "Food",
+      date: "2025-06-08",
       amount: -8000,
       icon: "local-grocery-store",
     },
     {
       id: 6,
       name: "Gym",
-      category: "Fitness",
+      date: "2025-06-10",
       amount: -6000,
       icon: "fitness-center",
     },
     {
       id: 7,
       name: "Dining Out",
-      category: "Food",
+      date: "2025-06-12",
       amount: -7000,
       icon: "restaurant",
     },
     {
       id: 8,
       name: "Spotify",
-      category: "Entertainment",
+      date: "2025-06-14",
       amount: -5000,
       icon: "music-note",
     },
     {
       id: 9,
       name: "Electricity Bill",
-      category: "Utilities",
+      date: "2025-06-15",
       amount: -4000,
       icon: "flash-on",
     },
     {
       id: 10,
       name: "Water Bill",
-      category: "Utilities",
+      date: "2025-06-17",
       amount: -3000,
       icon: "water",
     },
     {
       id: 11,
       name: "Internet Bill",
-      category: "Utilities",
+      date: "2025-06-19",
       amount: -2000,
       icon: "wifi",
     },
     {
       id: 12,
       name: "Phone Bill",
-      category: "Utilities",
+      date: "2025-06-20",
       amount: -2500,
       icon: "phone",
     },
     {
       id: 13,
       name: "Clothing",
-      category: "Shopping",
+      date: "2025-06-22",
       amount: -10000,
       icon: "checkroom",
     },
     {
       id: 14,
       name: "Books",
-      category: "Education",
+      date: "2025-06-24",
       amount: -7000,
       icon: "book",
     },
     {
       id: 15,
       name: "Travel",
-      category: "Leisure",
+      date: "2025-06-25",
       amount: -20000,
       icon: "flight",
     },
     {
       id: 16,
       name: "Insurance",
-      category: "Finance",
+      date: "2025-06-26",
       amount: -15000,
       icon: "shield",
     },
     {
       id: 17,
       name: "Charity",
-      category: "Donation",
+      date: "2025-06-27",
       amount: -5000,
       icon: "favorite",
     },
-    { id: 18, name: "Pet Care", category: "Pets", amount: -6000, icon: "pets" },
+    {
+      id: 18,
+      name: "Pet Care",
+      date: "2025-06-28",
+      amount: -6000,
+      icon: "pets",
+    },
     {
       id: 19,
       name: "Subscriptions",
-      category: "Entertainment",
+      date: "2025-06-29",
       amount: -8000,
       icon: "subscriptions",
     },
     {
       id: 20,
       name: "Miscellaneous",
-      category: "Other",
+      date: "2025-06-30",
       amount: -3000,
       icon: "more-horiz",
     },
@@ -153,7 +159,7 @@ const ExpenseCard = () => {
         <MaterialIcons name={item.icon} size={24} />
         <View>
           <Text style={{ fontSize: 16 }}>{item.name}</Text>
-          <Text style={{ fontSize: 14, color: "#888" }}>{item.category}</Text>
+          <Text style={{ fontSize: 14, color: "#888" }}>{item.date}</Text>
         </View>
       </View>
       <View>
@@ -161,7 +167,6 @@ const ExpenseCard = () => {
       </View>
     </View>
   );
-
   return (
     <View style={{ flex: 1 }}>
       <FlatList
@@ -174,29 +179,23 @@ const ExpenseCard = () => {
   );
 };
 
-export default ExpenseCard;
+export default Expenses;
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: "#f1f1f1",
-    borderRadius: 10,
+    backgroundColor: "#fff",
+    shadowColor: "#fff",
+    // backgroundColor: "#f1f1f1",
+    // shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    borderRadius: 20,
     padding: 5,
+    // padding: 15,
     display: "flex",
     justifyContent: "space-between",
     flexDirection: "row",
-    marginBottom: 10
+    marginBottom: 10,
+    elevation: 2,
   },
 });
-// card: {
-//     backgroundColor: '#fff',
-//     borderRadius: 10,
-//     padding: 15,
-//     flexDirection: 'row',
-//     justifyContent: 'space-between',
-//     alignItems: 'center',
-//     marginBottom: 10,
-//     elevation: 2,
-//     shadowColor: '#000',
-//     shadowOpacity: 0.1,
-//     shadowRadius: 4,
-// }

@@ -9,12 +9,6 @@ export default function RootLayout() {
         options={{
           headerShown: false,
           title: "Home",
-          // headerTitle: "Overview",
-          // headerTitleAlign: "center",
-          // headerTitleStyle: {
-          //   fontSize: 20,
-          //   fontWeight: "bold",
-          // },
           tabBarIcon: () => <MaterialIcons name="home" size={24} />,
         }}
       />
@@ -23,11 +17,6 @@ export default function RootLayout() {
         options={{
           headerShown: false,
           title: "History",
-          // headerTitleAlign: "center",
-          // headerTitleStyle: {
-          //   fontSize: 20,
-          //   fontWeight: "bold"
-          // },
           tabBarIcon: () => <MaterialIcons name="history" size={24} />,
         }}
       />
@@ -36,11 +25,6 @@ export default function RootLayout() {
         options={{
           headerShown: false,
           title: "Settings",
-          // headerTitleAlign: "center",
-          // headerTitleStyle: {
-          //   fontSize: 20,
-          //   fontWeight: "bold",
-          // },
           tabBarIcon: () => <MaterialIcons name="settings" size={24} />,
         }}
       />

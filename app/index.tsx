@@ -1,5 +1,12 @@
 import { useState } from "react";
-import { Platform, SafeAreaView, StatusBar, StyleSheet, Text, View } from "react-native";
+import {
+  Platform,
+  SafeAreaView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import AddButton from "../components/AddButton";
 import BudgetOverview from "../components/home/BudgetOverview";
 import ExpenseCard from "../components/home/ExpenseCard";
@@ -15,11 +22,14 @@ export default function Home() {
       </View>
       <View style={styles.moreActionBar}></View>
       <View style={styles.transactions}>
-        <Text style={styles.label}>Today's Expense</Text>
+        <Text style={styles.label}>{"Today's Expense"}</Text>
         <ExpenseCard />
       </View>
       <AddButton setModalVisible={setModalVisible} />
-      <ExpenseModal modalVisible={modalVisible} setModalVisible={setModalVisible} />
+      <ExpenseModal
+        modalVisible={modalVisible}
+        setModalVisible={setModalVisible}
+      />
     </SafeAreaView>
   );
 }

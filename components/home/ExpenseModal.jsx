@@ -133,6 +133,7 @@ const styles = StyleSheet.create({
     },
     input: {
         width: "100%",
+        height: 65,
         paddingHorizontal: 10,
     },
     picker: {
