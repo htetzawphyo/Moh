@@ -45,7 +45,7 @@ const CategoryModal = ({ modalVisible, setModalVisible }) => {
                             <TouchableOpacity
                                 key={category.id}
                                 style={styles.categoryItem}
-                                onPress={() => handleCategoryPress(category)}
+                                onPress={() => setModalVisible(false)}
                             >
                                 <MaterialIcons name={category.icon} size={24} color="#4CAF83" />
                                 <Text style={styles.categoryText}>{category.name}</Text>
@@ -85,7 +85,8 @@ const styles = StyleSheet.create({
     modalTitle: {
         fontSize: 16,
         fontWeight: "bold",
-        color: "#4CAF83"
+        color: "#4CAF83",
+        marginBottom: 20
     },
     // filter_box: {
     //     display: "flex",
