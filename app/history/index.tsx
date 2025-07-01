@@ -1,6 +1,8 @@
 import CategoryFilter from "@/components/history/CategoryFilter";
 import DateFilter from "@/components/history/DateFilter";
 import Expenses from "@/components/history/Expenses";
+import { useFilterStore } from "@/store/filterStore";
+import { MaterialIcons } from "@expo/vector-icons";
 import {
   Platform,
   SafeAreaView,
@@ -11,6 +13,9 @@ import {
 } from "react-native";
 
 export default function History() {
+  const filterType = useFilterStore((state) => state.filterType);
+  const filterValue = useFilterStore((state) => state.filterValue);
+
   return (
     <SafeAreaView style={styles.container}>
 
@@ -22,8 +27,23 @@ export default function History() {
         </View>
       </View>
 
+      <View style={{
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 20,
+        gap: 10,
+        marginBottom: 25
+      }}>
+        <MaterialIcons name="filter-list" size={24} color="#4CAF83" />
+        {filterType && filterValue && (
+          <Text style={styles.filter_label}>{filterType} : {filterValue}</Text>
+        )}
+      </View>
+
       <View style={styles.expenses_container}>
-        <Text style={styles.title_label}>Past Expenses</Text>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Text style={styles.title_label}>Past Expenses</Text>
+        </View>
         <Expenses />
       </View>
     </SafeAreaView>
@@ -37,7 +57,8 @@ const styles = StyleSheet.create({
     backgroundColor: "#f1f1f1"
   },
   filter_container: {
-    padding: 20,
+    paddingHorizontal: 20,
+    marginBottom: 10
   },
   expenses_container: {
     flex: 1,
@@ -55,5 +76,8 @@ const styles = StyleSheet.create({
   filter_row: {
     flexDirection: 'row',
     gap: 10,
+  },
+  filter_label: {
+    fontSize: 12,
   }
 });

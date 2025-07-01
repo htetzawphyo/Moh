@@ -1,11 +1,21 @@
+import CategoryModal from "@/components/history/CategoryModal";
 import { MaterialIcons } from "@expo/vector-icons";
+import { useState } from "react";
 import { StyleSheet, Text, TouchableOpacity } from "react-native";
 
 const CategoryFilter = () => {
+  const [modalVisible, setModalVisible] = useState(false);
+
+  const showModal = () => {
+    setModalVisible(true);
+  }
   return (
-    <TouchableOpacity style={styles.container}>
+    <TouchableOpacity style={styles.container} onPress={showModal}>
       <MaterialIcons name="list" size={24} />
       <Text style={{ fontSize: 16 }}>Category</Text>
+      <CategoryModal
+        modalVisible={modalVisible}
+        setModalVisible={setModalVisible} />
     </TouchableOpacity>
   );
 };
