@@ -8,14 +8,15 @@ const CategoryFilter = () => {
 
   const showModal = () => {
     setModalVisible(true);
-  }
+  };
   return (
     <TouchableOpacity style={styles.container} onPress={showModal}>
       <MaterialIcons name="list" size={24} />
       <Text style={{ fontSize: 16 }}>Category</Text>
       <CategoryModal
         modalVisible={modalVisible}
-        setModalVisible={setModalVisible} />
+        setModalVisible={setModalVisible}
+      />
     </TouchableOpacity>
   );
 };

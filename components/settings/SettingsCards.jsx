@@ -1,10 +1,10 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
-const SettingsCard = () => {
+const SettingsCard = ({ onPressCategory, onPressBudget }) => {
   return (
     <View>
-      <TouchableOpacity style={styles.card}>
+      <TouchableOpacity style={styles.card} onPress={onPressCategory}>
         <View
           style={{
             display: "flex",
@@ -24,7 +24,7 @@ const SettingsCard = () => {
         </View>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.card}>
+      <TouchableOpacity style={styles.card} onPress={onPressBudget}>
         <View
           style={{
             display: "flex",

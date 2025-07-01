@@ -1,4 +1,5 @@
 import SettingsCard from "@/components/settings/SettingsCards";
+import { router } from "expo-router";
 import {
   Platform,
   SafeAreaView,
@@ -9,12 +10,20 @@ import {
 } from "react-native";
 
 const Settings = () => {
+  const navigateToCategory = () => router.push("/settings/category");
+  const navigateToBudget = () => router.push("/settings/budget");
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.child_container}>
         <Text style={styles.title_label}>Settings</Text>
-        <Text style={{ marginBottom: 20, fontSize: 14, color: "#888" }}>Customize your app experience</Text>
-        <SettingsCard />
+        <Text style={{ marginBottom: 20, fontSize: 14, color: "#888" }}>
+          Customize your app experience
+        </Text>
+        <SettingsCard 
+          onPressCategory={navigateToCategory}
+          onPressBudget={navigateToBudget}
+        />
       </View>
     </SafeAreaView>
   );
@@ -27,7 +36,9 @@ const styles = StyleSheet.create({
     backgroundColor: "#f1f1f1",
   },
   child_container: {
-    padding: 20,
+    paddingHorizontal: 20,
+    paddingBottom: 20,
+    paddingTop: 10,
   },
   title_label: {
     fontSize: 22,
