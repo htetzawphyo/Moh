@@ -1,7 +1,6 @@
 import { useFilterStore } from "@/store/filterStore";
 import { MaterialIcons } from "@expo/vector-icons";
-import {
-  DateTimePicker,
+import DateTimePicker, {
   DateTimePickerAndroid,
 } from "@react-native-community/datetimepicker";
 import { useState } from "react";
@@ -46,6 +45,15 @@ const DateFilter = () => {
       });
     } else {
       setShowDatePicker(true);
+      // <DateTimePicker
+      //   testID="dateTimePicker"
+      //   value={selectedDate}
+      //   mode="date"
+      //   is24Hour={true}
+      //   onChange={onChange}
+      //   display="spinner"
+      //   maximumDate={new Date()}
+      // />
     }
   };
 
@@ -65,7 +73,7 @@ const DateFilter = () => {
           mode="date"
           is24Hour={true}
           onChange={onChange}
-          display="spinner"
+          display="inline"
           maximumDate={new Date()}
         />
       )}
@@ -88,6 +96,7 @@ const styles = StyleSheet.create({
     shadowColor: "#000",
     shadowOpacity: 0.1,
     shadowRadius: 4,
+    // marginBottom: 10,
   },
 });
 
