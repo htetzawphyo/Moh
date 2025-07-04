@@ -32,7 +32,11 @@ const Category = () => {
         <View style={styles.grid}>
           {categories.map((category, index) => (
             <View key={index} style={styles.item}>
-              <MaterialIcons name={category.icon as any} size={24} color="black" />
+              <MaterialIcons
+                name={category.icon as any}
+                size={24}
+                color="black"
+              />
               <Text>{category.name}</Text>
             </View>
           ))}
@@ -60,6 +64,6 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     alignItems: "center",
   },
-})
+});
 
 export default Category;

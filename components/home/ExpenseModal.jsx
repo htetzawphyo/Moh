@@ -32,7 +32,7 @@ const ExpenseModal = ({ modalVisible, setModalVisible }) => {
           <View style={styles.childContainer}>
             <Text style={styles.label}>Title</Text>
             <View style={styles.inputContainer}>
-              <TextInput placeholder="" style={styles.input} />
+              <TextInput placeholder="Title" style={styles.input} />
             </View>
           </View>
 
@@ -40,7 +40,7 @@ const ExpenseModal = ({ modalVisible, setModalVisible }) => {
             <Text style={styles.label}>Amount</Text>
             <View style={styles.inputContainer}>
               <TextInput
-                placeholder=""
+                placeholder="Amount"
                 keyboardType="numeric"
                 style={styles.input}
               />
@@ -144,14 +144,16 @@ const styles = StyleSheet.create({
     width: "100%",
   },
   label: {
-    fontSize: 16,
+    fontSize: 14,
+    color: "#666",
     height: 30,
     fontWeight: "bold",
   },
   inputContainer: {
     backgroundColor: "#edf1f4",
     borderColor: "#ccc",
-    borderWidth: 1,
+    border: "none",
+    borderWidth: 0,
     borderRadius: 8,
     overflow: "hidden",
     width: "100%",

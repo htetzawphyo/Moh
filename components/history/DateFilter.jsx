@@ -45,7 +45,7 @@ const DateFilter = () => {
       });
     } else {
       setShowDatePicker(true);
-      // <DateTimePicker
+      // <DateTimePickernewDate
       //   testID="dateTimePicker"
       //   value={selectedDate}
       //   mode="date"
