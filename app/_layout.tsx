@@ -1,7 +1,42 @@
+import { useDbStore } from "@/store/dbStore";
 import { MaterialIcons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
+import { useEffect } from "react";
+import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
 
 export default function RootLayout() {
+  const { db, dbLoaded, dbError, initializeDb } = useDbStore();
+
+  useEffect(() => {
+    // Database က မload ရသေးမှသာ initialize လုပ်ပါ
+    console.log("hello");
+
+    if (!dbLoaded && !db && !dbError) {
+      initializeDb();
+    }
+  }, [dbLoaded, db, dbError, initializeDb]); // Dependencies တွေ ထည့်ပေးပါ။
+
+  // Database loading error ရှိရင် ပြသပါ
+  if (dbError) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.errorText}>
+          Error loading database: {dbError.message}
+        </Text>
+      </View>
+    );
+  }
+
+  // Database loading နေတုန်းဆိုရင် loading indicator ပြသပါ
+  if (!dbLoaded) {
+    return (
+      <View style={styles.container}>
+        <ActivityIndicator size="large" color="#0000ff" />
+        <Text style={styles.loadingText}>Initializing database...</Text>
+      </View>
+    );
+  }
+
   return (
     <Tabs>
       <Tabs.Screen
@@ -31,3 +66,20 @@ export default function RootLayout() {
     </Tabs>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  loadingText: {
+    marginTop: 10,
+    fontSize: 16,
+  },
+  errorText: {
+    color: "red",
+    fontSize: 16,
+    textAlign: "center",
+  },
+});
