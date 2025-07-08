@@ -8,15 +8,13 @@ export default function RootLayout() {
   const { db, dbLoaded, dbError, initializeDb } = useDbStore();
 
   useEffect(() => {
-    // Database က မload ရသေးမှသာ initialize လုပ်ပါ
     console.log("hello");
 
     if (!dbLoaded && !db && !dbError) {
       initializeDb();
     }
-  }, [dbLoaded, db, dbError, initializeDb]); // Dependencies တွေ ထည့်ပေးပါ။
+  }, [dbLoaded, db, dbError, initializeDb]); 
 
-  // Database loading error ရှိရင် ပြသပါ
   if (dbError) {
     return (
       <View style={styles.container}>
@@ -27,7 +25,6 @@ export default function RootLayout() {
     );
   }
 
-  // Database loading နေတုန်းဆိုရင် loading indicator ပြသပါ
   if (!dbLoaded) {
     return (
       <View style={styles.container}>
