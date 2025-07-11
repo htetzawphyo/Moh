@@ -3,9 +3,16 @@ import { MaterialIcons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
 import { useEffect } from "react";
 import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
+import { useDrizzleStudio } from "expo-drizzle-studio-plugin";
+import * as SQLite from 'expo-sqlite';
 
 export default function RootLayout() {
   const { db, dbLoaded, dbError, initializeDb } = useDbStore();
+  
+  // =================== it's for dabase client ========================
+  const showDb = SQLite.openDatabaseSync('moh_db.db');
+  useDrizzleStudio(showDb);
+  // =================== it's for dabase client =========================
 
   useEffect(() => {
     console.log("hello");

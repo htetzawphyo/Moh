@@ -7,6 +7,7 @@ export const budgets = sqliteTable("budget", {
   totalBudget: real("total_budget").notNull(),
   startDate: text("start_date").notNull(),
   endDate: text("end_date").notNull(),
+  isActive: integer("is_active", { mode: "boolean" }).notNull().default(1),
 });
 
 export const userBudgets = sqliteTable("user_budget", {
