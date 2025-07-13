@@ -1,0 +1,1 @@
+ALTER TABLE `expense` ADD `show_as_today` integer DEFAULT 0 NOT NULL;

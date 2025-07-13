@@ -8,7 +8,7 @@ import {
   View,
 } from "react-native";
 import AddButton from "../components/AddButton";
-import BudgetOverview from "../components/home/BudgetOverview";
+import BudgetOverview from "../components/home/BudgetOverview.jsx";
 import ExpenseCard from "../components/home/ExpenseCard";
 import ExpenseModal from "../components/home/ExpenseModal";
 
@@ -22,7 +22,7 @@ export default function Home() {
       </View>
       <View style={styles.moreActionBar}></View>
       <View style={styles.transactions}>
-        <Text style={styles.label}>{"Today's Expense"}</Text>
+        <Text style={styles.label}>ယနေ့ ကုန်ကျငွေစားရင်း</Text>
         <ExpenseCard />
       </View>
       <AddButton setModalVisible={setModalVisible} />
@@ -59,7 +59,8 @@ const styles = StyleSheet.create({
     backgroundColor: "#f1f1f1",
   },
   label: {
-    fontSize: 20,
+    lineHeight: 28,
+    fontSize: 18,
     fontWeight: "bold",
     color: "#4CAF83",
   },

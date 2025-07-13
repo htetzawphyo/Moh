@@ -15,6 +15,48 @@
       "when": 1752231145834,
       "tag": "0001_nifty_pestilence",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1752301089067,
+      "tag": "0002_adorable_pestilence",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1752301212335,
+      "tag": "0003_lying_chameleon",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1752301801331,
+      "tag": "0004_old_blockbuster",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1752302942373,
+      "tag": "0005_uneven_cassandra_nova",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1752345581662,
+      "tag": "0006_mute_banshee",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "6",
+      "when": 1752422844842,
+      "tag": "0007_glossy_beyonder",
+      "breakpoints": true
     }
   ]
 }

@@ -1,6 +1,8 @@
-// src/screens/BudgetScreen.tsx
-import DateTimePicker from '@react-native-community/datetimepicker';
-import React, { useCallback, useEffect, useState } from 'react'; // useCallback ကို ထပ်ထည့်ပါ
+import { budgets, todayExpenses, userBudgets } from "@/database/schema";
+import { useDbStore } from "@/store/dbStore";
+import DateTimePicker from "@react-native-community/datetimepicker";
+import { count, eq, not } from "drizzle-orm";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -10,12 +12,8 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  View
-} from 'react-native';
-
-import { budgets } from '@/database/schema';
-import { useDbStore } from '@/store/dbStore';
-import { eq, not } from 'drizzle-orm';
+  View,
+} from "react-native";
 
 interface Budget {
   id: number;
@@ -26,9 +24,9 @@ interface Budget {
 }
 
 const BudgetScreen: React.FC = () => {
-  const { db, dbLoaded, dbError, initializeDb } = useDbStore(); // dbError နဲ့ resetDbState ကို ရယူပါ
+  const { db, dbLoaded, dbError, initializeDb, resetDbState } = useDbStore(); // dbError နဲ့ resetDbState ကို ရယူပါ
   const [budgetList, setBudgetList] = useState<Budget[]>([]);
-  const [newBudgetAmount, setNewBudgetAmount] = useState('');
+  const [newBudgetAmount, setNewBudgetAmount] = useState("");
 
   const [startDate, setStartDate] = useState(new Date());
   const [endDate, setEndDate] = useState(new Date());
@@ -36,48 +34,52 @@ const BudgetScreen: React.FC = () => {
   const [showStartDatePicker, setShowStartDatePicker] = useState(false);
   const [showEndDatePicker, setShowEndDatePicker] = useState(false);
 
-  const [loadingData, setLoadingData] = useState(true); // Renamed to avoid conflict with dbLoaded
+  const [loadingData, setLoadingData] = useState(true);
 
-  // Use useCallback for functions that depend on `db` to prevent unnecessary re-renders/re-creations
   const fetchBudgets = useCallback(async () => {
     setLoadingData(true);
-    // setError(null); // Managed by dbError now for initial load, but keep for other operations
     try {
       if (db) {
         const result = await db.select().from(budgets).all();
         setBudgetList(result);
-        console.log('Fetched budgets:', result);
+        console.log("Fetched budgets:", result);
       }
     } catch (err: any) {
-      console.error('Error fetching budgets:', err);
-      Alert.alert('Error', 'Failed to fetch budgets: ' + (err.message || 'Unknown error.'));
-      // setError('Failed to fetch budgets: ' + err.message); // Set local error if fetching fails AFTER db is loaded
-      // Maybe also set dbError here if you want it to trigger the main error screen
-      // useDbStore.setState({ dbError: err }); // You could do this, but usually dbError is for initialization
+      console.error("Error fetching budgets:", err);
+      Alert.alert(
+        "Error",
+        "Failed to fetch budgets: " + (err.message || "Unknown error.")
+      );
+
+      useDbStore.setState({
+        dbError: new Error(
+          "Database connection lost during fetch. Please retry."
+        ),
+      });
     } finally {
       setLoadingData(false);
     }
-  }, [db]); // Depend on db
+  }, [db]);
 
   // Initial DB load
   useEffect(() => {
-    if (!dbLoaded && !dbError) { // Only initialize if not loaded and no error
-      console.log('Triggering database initialization...');
+    if (!dbLoaded && !dbError) {
+      console.log("Triggering database initialization...");
       initializeDb();
     }
-  }, [dbLoaded, dbError, initializeDb]); // Add dbError to dependency array
+  }, [dbLoaded, dbError, initializeDb]);
 
   // Fetch data once DB is loaded
   useEffect(() => {
-    if (dbLoaded && db && !dbError) { // Only fetch if db is loaded and no initialization error
+    if (dbLoaded && db && !dbError) {
       fetchBudgets();
     }
-  }, [dbLoaded, db, dbError, fetchBudgets]); // Add dbError and fetchBudgets to dependency array
+  }, [dbLoaded, db, dbError, fetchBudgets]);
 
   const formatDateForDb = (date: Date): string => {
     const year = date.getFullYear();
-    const month = (date.getMonth() + 1).toString().padStart(2, '0');
-    const day = date.getDate().toString().padStart(2, '0');
+    const month = (date.getMonth() + 1).toString().padStart(2, "0");
+    const day = date.getDate().toString().padStart(2, "0");
     return `${year}-${month}-${day}`;
   };
 
@@ -87,131 +89,224 @@ const BudgetScreen: React.FC = () => {
     setDateState: React.Dispatch<React.SetStateAction<Date>>,
     setShowPickerState: React.Dispatch<React.SetStateAction<boolean>>
   ) => {
-    setShowPickerState(Platform.OS === 'ios'); // Hide picker immediately on iOS
+    setShowPickerState(Platform.OS === "ios");
 
     if (selectedDate) {
       setDateState(selectedDate);
     }
 
-    if (Platform.OS === 'android') {
+    if (Platform.OS === "android") {
       setShowPickerState(false);
     }
   };
 
   const addBudget = async () => {
     if (!db) {
-      // Use dbError from store or a local error for user feedback
-      // setError('Database not loaded yet.'); // This is covered by the main loading/error state
-      console.error('Attempted to add budget when DB not available.');
+      Alert.alert("Error", "Database not connected. Please retry.");
+      useDbStore.setState({
+        dbError: new Error(
+          "Database not connected for adding budget. Please retry."
+        ),
+      });
       return;
     }
     if (!newBudgetAmount) {
-      // Use a local state for input validation errors
-      alert('Budget amount is required.'); // Simple alert for immediate feedback
+      Alert.alert("Validation Error", "Budget amount is required.");
+      return;
+    }
+
+    const result = await db
+      .select({
+        totalCount: count(),
+      })
+      .from(budgets)
+      .get();
+
+    if (result && result.totalCount >= 3) {
+      Alert.alert("Limit Exceeded", "You can only store a total of 3 budgets.");
       return;
     }
 
     try {
       const parsedAmount = parseFloat(newBudgetAmount);
       if (isNaN(parsedAmount)) {
-        alert('Please enter a valid number for budget amount.');
+        alert("Please enter a valid number for budget amount.");
         return;
       }
 
       const formattedStartDate = formatDateForDb(startDate);
       const formattedEndDate = formatDateForDb(endDate);
 
-      const inserted = await db.insert(budgets).values({
-        totalBudget: parsedAmount,
-        startDate: formattedStartDate,
-        endDate: formattedEndDate,
-        isActive: false,
-      }).returning();
+      const inserted = await db
+        .insert(budgets)
+        .values({
+          totalBudget: parsedAmount,
+          startDate: formattedStartDate,
+          endDate: formattedEndDate,
+          isActive: false,
+        })
+        .returning();
 
-      console.log('Added budget:', inserted);
-      setNewBudgetAmount('');
+      console.log("Added budget:", inserted);
+      setNewBudgetAmount("");
       setStartDate(new Date());
       setEndDate(new Date());
-      fetchBudgets(); // Refresh the list after adding
+      fetchBudgets();
     } catch (err: any) {
-      console.error('Error adding budget:', err);
-      alert('Failed to add budget: ' + err.message); // Show error to user
+      alert("Failed to add budget: " + err.message);
+      useDbStore.setState({
+        dbError: new Error(
+          "Failed to add budget due to database issue. Please retry."
+        ),
+      });
     }
   };
 
   const deleteBudget = async (id: number) => {
     if (!db) {
-      Alert.alert('Error', 'Database is not ready. Please try again or restart the app.');
-      console.error('Attempted to delete budget when DB not available.');
+      Alert.alert(
+        "Error",
+        "Database is not ready. Please try again or restart the app."
+      );
+      useDbStore.setState({
+        dbError: new Error(
+          "Database not connected for deleting budget. Please retry."
+        ),
+      });
       return;
     }
     Alert.alert(
-      "Confirm Delete",
-      "Are you sure you want to delete this budget?",
+      "ဤ Budget ကို ဖျက်မည်",
+      'အကယ်၍ သင်က ဤ Budget ကို အသုံးပြုနေပြီးတော့ ဖျက်လိုက်လျှင် "ယနေ့ အသုံးစားရိတ်" တွင် သင် ထည့်သွင်းမှတ်သားထားသည့် စားရင်းများရှိပါက ပျက်သွားပါမည်။ ဖျက်ချင်တာ သေချာပါသလား?',
       [
         {
-          text: "Cancel",
-          style: "cancel"
+          text: "မဖျက်တော့ပါ",
+          style: "cancel",
         },
         {
-          text: "Delete",
+          text: "ဖျက်မည်",
           onPress: async () => {
             try {
               await db.delete(budgets).where(eq(budgets.id, id)).run();
-              console.log('Deleted budget with ID:', id);
+              console.log("Deleted budget with ID:", id);
               fetchBudgets();
             } catch (err: any) {
-              console.error('Error deleting budget:', err);
-              Alert.alert('Error', 'Failed to delete budget: ' + (err.message || 'Unknown error.'));
+              console.error("Error deleting budget:", err);
+              Alert.alert(
+                "Error",
+                "Failed to delete budget: " + (err.message || "Unknown error.")
+              );
+              useDbStore.setState({
+                dbError: new Error(
+                  "Failed to delete budget due to database issue. Please retry."
+                ),
+              });
             }
           },
-          style: "destructive"
-        }
+          style: "destructive",
+        },
       ]
     );
   };
 
-  const toggleBudgetActiveStatus = async (id: number, currentStatus: boolean) => {
+  const toggleBudgetActiveStatus = async (
+    id: number,
+    currentStatus: boolean
+  ) => {
     if (!db) {
-      Alert.alert('Error', 'Database is not ready. Please try again or restart the app.');
-      console.error('Attempted to toggle budget status when DB not available.');
+      Alert.alert(
+        "Error",
+        "Database is not ready. Please try again or restart the app."
+      );
+      console.error("Attempted to toggle budget status when DB not available.");
+      useDbStore.setState({
+        dbError: new Error(
+          "Database not connected for toggling status. Please retry."
+        ),
+      });
       return;
     }
 
     try {
       if (currentStatus) {
-        // If current budget is already active and we want to deactivate it,
-        // we can simply toggle it. But usually you want at least one active budget.
-        // For the requirement "only one active", if this is the active one,
-        // and you want to deactivate it, you should probably disallow it
-        // or force activation of another budget.
-        // For simplicity, if you press 'Deactivate', it just deactivates this one.
-        await db.update(budgets)
-          .set({ isActive: false })
-          .where(eq(budgets.id, id))
-          .run();
-        console.log(`Deactivated budget ID: ${id}`);
+        Alert.alert(
+          "ပိတ်သိမ်းမည်",
+          'ဤ Budget ကို ပိတ်သိမ်းလိုက်ပါက "ယနေ့ အသုံးစားရိတ်" တွင် သင် ထည့်သွင်းမှတ်သားထားသည့် စာရင်းများရှိပါက ပျက်သွားပါမည်။',
+          [
+            {
+              text: "မပြုလုပ်တော့ပါ",
+              style: "cancel",
+            },
+            {
+              text: "ပိတ်သိမ်းမည်",
+              onPress: async () => {
+                await db
+                  .update(budgets)
+                  .set({ isActive: false })
+                  .where(eq(budgets.id, id))
+                  .run();
+
+                await db
+                  .update(userBudgets)
+                  .set({ isActive: false })
+                  .where(eq(userBudgets.budgetId, id))
+                  .run();
+
+                await db.delete(todayExpenses);
+
+                fetchBudgets();
+              },
+            },
+          ]
+        );
       } else {
-        // If the current budget is inactive and we want to activate it:
-        // 1. Deactivate all other budgets
-        await db.update(budgets)
-          .set({ isActive: false })
-          .where(not(eq(budgets.id, id))) // NOT the current budget's ID
-          .run();
+        Alert.alert(
+          "ဖွင့်မည်",
+          'ဤ Budget ကို ဖွင့်လျှင် အခြား ဖွင့်ထားသော Budget Setting များရှိလာပါက အလိုအလျှောက် ပိတ်သွားမည်ဖြစ်သည်။ System မှ အလိုအလျှောက် သတ်မှတ်ထားသော Budget Setting များလည်း ယခု သင်ဖွင့်လိုက်သော Budget Setting အတိုင်း ပြောင်းလဲသွားမည်ဖြစ်ပြီး "ယနေ့ အသုံးစားရိတ်" တွင် သင်ထည့်သွင်း သတ်မှတ်ထားသော စားရင်များရှိပါက ပျက်သွားပါမည်။',
+          [
+            {
+              text: "မပြုလုပ်တော့ပါ",
+              style: "cancel",
+            },
+            {
+              text: "ဖွင့်မည်",
+              onPress: async () => {
+                await db
+                  .update(budgets)
+                  .set({ isActive: false })
+                  .where(not(eq(budgets.id, id)))
+                  .run();
 
-        // 2. Activate the selected budget
-        await db.update(budgets)
-          .set({ isActive: true })
-          .where(eq(budgets.id, id))
-          .run();
+                await db
+                  .update(budgets)
+                  .set({ isActive: true })
+                  .where(eq(budgets.id, id))
+                  .run();
 
-        console.log(`Activated budget ID: ${id} and deactivated others.`);
+                await db.delete(todayExpenses);
+
+                await db.insert(userBudgets).values({
+                  budgetId: id,
+                  isActive: true
+                });
+
+                fetchBudgets();
+              },
+            },
+          ]
+        );
       }
-
-      fetchBudgets(); // Refresh the list after changes
     } catch (err: any) {
-      console.error('Error toggling budget status:', err);
-      Alert.alert('Error', 'Failed to change budget status: ' + (err.message || 'Unknown error.'));
+      console.error("Error toggling budget status:", err);
+      Alert.alert(
+        "Error",
+        "Failed to change budget status: " + (err.message || "Unknown error.")
+      );
+      useDbStore.setState({
+        dbError: new Error(
+          "Failed to toggle budget status due to database issue. Please retry."
+        ),
+      });
     }
   };
 
@@ -232,12 +327,22 @@ const BudgetScreen: React.FC = () => {
     return (
       <View style={styles.container}>
         <Text style={styles.errorText}>
-          Database Initialization Error: {dbError.message || 'Unknown error'}
+          Database Initialization Error: {dbError.message || "Unknown error"}
         </Text>
         <Text style={styles.errorText}>
           Please ensure your database setup is correct and try again.
         </Text>
-        {/* <Button title="Retry Initialization" onPress={resetDbState} /> Allow user to retry */}
+
+        <TouchableOpacity
+          style={styles.retryButton}
+          onPress={() => {
+            console.log("Retrying DB initialization...");
+            resetDbState();
+            initializeDb();
+          }}
+        >
+          <Text style={styles.retryButtonText}>Retry Initialization</Text>
+        </TouchableOpacity>
       </View>
     );
   }
@@ -261,18 +366,21 @@ const BudgetScreen: React.FC = () => {
             style={styles.inputWithIcon}
             onPress={() => setShowStartDatePicker(true)}
           >
-            <Text style={styles.inputText}>
-              {startDate.toDateString()}
-            </Text>
+            <Text style={styles.inputText}>{startDate.toDateString()}</Text>
             <Text style={styles.icon}>📅</Text>
           </TouchableOpacity>
           {showStartDatePicker && (
             <DateTimePicker
               value={startDate}
               mode="date"
-              display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+              display={Platform.OS === "ios" ? "spinner" : "default"}
               onChange={(event, selectedDate) =>
-                handleDateChange(event, selectedDate, setStartDate, setShowStartDatePicker)
+                handleDateChange(
+                  event,
+                  selectedDate,
+                  setStartDate,
+                  setShowStartDatePicker
+                )
               }
             />
           )}
@@ -285,25 +393,28 @@ const BudgetScreen: React.FC = () => {
             style={styles.inputWithIcon}
             onPress={() => setShowEndDatePicker(true)}
           >
-            <Text style={styles.inputText}>
-              {endDate.toDateString()}
-            </Text>
+            <Text style={styles.inputText}>{endDate.toDateString()}</Text>
             <Text style={styles.icon}>📅</Text>
           </TouchableOpacity>
           {showEndDatePicker && (
             <DateTimePicker
               value={endDate}
               mode="date"
-              display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+              display={Platform.OS === "ios" ? "spinner" : "default"}
               onChange={(event, selectedDate) =>
-                handleDateChange(event, selectedDate, setEndDate, setShowEndDatePicker)
+                handleDateChange(
+                  event,
+                  selectedDate,
+                  setEndDate,
+                  setShowEndDatePicker
+                )
               }
             />
           )}
         </View>
 
         <TouchableOpacity style={styles.submitButton} onPress={addBudget}>
-          <Text style={styles.submitButtonText}>Submit</Text>
+          <Text style={styles.submitButtonText}>သိမ်းမည်</Text>
         </TouchableOpacity>
       </View>
 
@@ -313,18 +424,26 @@ const BudgetScreen: React.FC = () => {
         keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => (
           <View style={styles.budgetItem}>
-            {/* ID ကို ဖြုတ်လိုက်ပါပြီ */}
-            <Text style={styles.budgetItemText}>Amount: ${item.totalBudget.toFixed(2)}</Text>
-            <Text style={styles.budgetItemText}>Period: {item.startDate} to {item.endDate}</Text>
-            <Text style={styles.budgetItemText}>Status: {item.isActive ? 'Active' : 'Inactive'}</Text>
+            <Text style={styles.budgetItemText}>
+              Amount: {item.totalBudget.toFixed(2)}
+            </Text>
+            <Text style={styles.budgetItemText}>
+              Period: {item.startDate} to {item.endDate}
+            </Text>
+            <Text style={styles.budgetItemText}>
+              Status: {item.isActive ? "Active" : "Inactive"}
+            </Text>
             <View style={styles.buttonRow}>
               {/* Active/Inactive Button */}
               <TouchableOpacity
-                style={[styles.actionButton, item.isActive ? styles.activeButton : styles.inactiveButton]}
+                style={[
+                  styles.actionButton,
+                  item.isActive ? styles.activeButton : styles.inactiveButton,
+                ]}
                 onPress={() => toggleBudgetActiveStatus(item.id, item.isActive)}
               >
                 <Text style={styles.actionButtonText}>
-                  {item.isActive ? 'Deactivate' : 'Activate'}
+                  {item.isActive ? "Deactivate" : "Activate"}
                 </Text>
               </TouchableOpacity>
 
@@ -348,17 +467,17 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
   },
   header: {
     fontSize: 24,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 20,
-    textAlign: 'center',
+    textAlign: "center",
   },
   subHeader: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: "600",
     marginTop: 20,
     marginBottom: 10,
   },
@@ -367,47 +486,47 @@ const styles = StyleSheet.create({
   },
   input: {
     borderBottomWidth: 1,
-    borderBottomColor: '#ccc',
+    borderBottomColor: "#ccc",
     paddingVertical: 10,
     paddingHorizontal: 0,
     marginBottom: 20,
-    backgroundColor: 'transparent',
+    backgroundColor: "transparent",
   },
   fieldWrapper: {
     marginBottom: 20,
   },
   inputLabel: {
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: "500",
     marginBottom: 8,
-    color: '#333',
+    color: "#333",
   },
   inputWithIcon: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     borderBottomWidth: 1,
-    borderBottomColor: '#ccc',
+    borderBottomColor: "#ccc",
     paddingVertical: 10,
     paddingHorizontal: 0,
-    backgroundColor: 'transparent',
+    backgroundColor: "transparent",
   },
   inputText: {
     flex: 1,
     fontSize: 16,
-    color: '#333',
+    color: "#333",
   },
   icon: {
     fontSize: 20,
     marginLeft: 10,
-    color: '#888',
+    color: "#888",
   },
   budgetItem: {
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     padding: 15,
     marginVertical: 8,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#eee',
+    borderColor: "#eee",
     // flexDirection: 'column',
     // gap: 5,
   },
@@ -416,8 +535,8 @@ const styles = StyleSheet.create({
     marginBottom: 5, // Space between text lines
   },
   buttonRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-around', // Distribute buttons evenly
+    flexDirection: "row",
+    justifyContent: "space-around", // Distribute buttons evenly
     marginTop: 10, // Space above buttons
   },
   actionButton: {
@@ -425,39 +544,52 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     borderRadius: 5,
     minWidth: 100, // Ensure buttons have a minimum width
-    alignItems: 'center',
+    alignItems: "center",
   },
   activeButton: {
-    backgroundColor: '#4CAF50', // Green for active/activate
+    backgroundColor: "#4CAF50", // Green for active/activate
   },
   inactiveButton: {
-    backgroundColor: '#FFC107', // Orange for inactive/deactivate
+    backgroundColor: "#FFC107", // Orange for inactive/deactivate
   },
   deleteButton: {
-    backgroundColor: '#F44336', // Red for delete
+    backgroundColor: "#F44336", // Red for delete
     marginLeft: 10, // Space between buttons
   },
   actionButtonText: {
-    color: '#fff',
-    fontWeight: 'bold',
+    color: "#fff",
+    fontWeight: "bold",
     fontSize: 14,
   },
   errorText: {
-    color: 'red',
-    textAlign: 'center',
+    color: "red",
+    textAlign: "center",
     marginBottom: 10,
   },
   submitButton: {
-    backgroundColor: '#388e3c',
+    backgroundColor: "#388e3c",
     padding: 15,
     borderRadius: 5,
-    alignItems: 'center',
+    alignItems: "center",
     marginTop: 30,
   },
   submitButtonText: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: 'bold',
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "bold",
+    lineHeight: 25,
+  },
+  retryButton: {
+    backgroundColor: "#007AFF", // Blue color for retry button
+    padding: 12,
+    borderRadius: 8,
+    marginTop: 20,
+    alignSelf: "center",
+  },
+  retryButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "bold",
   },
 });
 

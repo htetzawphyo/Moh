@@ -1,60 +1,51 @@
 import calculateDailyBudget from "@/utils/calculateDailyBudget";
 import useCalculateSpentToday from "@/utils/useCalculateSpentToday";
 import useCalculateTotalRemainingBudget from "@/utils/useCalculateTotalRemainingBudget";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
 const BudgetOverview = () => {
-  const fetchRemainingBudget = useCalculateTotalRemainingBudget();
-  const spentToday = useCalculateSpentToday(); // ✅ Just value, not function
-
+  const calculateBudgetAmount = useCalculateTotalRemainingBudget();
+  const spentToday = useCalculateSpentToday();
   const [totalBudget, setTotalBudget] = useState(0);
   const [totalRemainingBudget, setTotalRemainingBudget] = useState(0);
   const [dailyBudget, setDailyBudget] = useState(0);
   const [dailyRemain, setDailyRemain] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
 
-  const loadBudgetData = useCallback(async () => {
-    try {
+  useEffect(() => {
+    const fetchRemainingBudget = async () => {
       setIsLoading(true);
 
-      const result = await fetchRemainingBudget();
-
+      // 1
+      const result = await calculateBudgetAmount();
       const fetchedTotalBudget = result?.totalBudget || 0;
-      const fetchedRemainingBudget = result?.totalRemainingBudget || 0;
-      const startDate = result?.startDate ? new Date(result.startDate) : new Date();
-      const endDate = result?.endDate ? new Date(result.endDate) : new Date();
-
-      const computedDailyBudget = calculateDailyBudget(
-        fetchedTotalBudget,
-        startDate,
-        endDate
-      );
-      const computedDailyRemain = computedDailyBudget - spentToday;
-
+      const fetchedTotalRemainingBudget = result?.totalRemainingBudget || 0;
+      const startDate = result?.startDate || new Date();
+      const endDate = result?.endDate || new Date();
       setTotalBudget(fetchedTotalBudget);
-      setTotalRemainingBudget(fetchedRemainingBudget);
-      setDailyBudget(computedDailyBudget);
-      setDailyRemain(Math.max(0, computedDailyRemain));
-    } catch (error) {
-      console.error("BudgetOverview error:", error);
-    } finally {
+      setTotalRemainingBudget(fetchedTotalRemainingBudget);
+
+      // 2
+      if (result) {
+        setDailyBudget(calculateDailyBudget(totalBudget, startDate, endDate));
+      }
+      if (dailyBudget && spentToday) {
+        setDailyRemain(dailyBudget - spentToday);
+      }
+
       setIsLoading(false);
-    }
-  }, [fetchRemainingBudget, spentToday]); // ✅ Remove useCalculateSpentToday
+    };
 
-  useEffect(() => {
-    loadBudgetData();
-  }, [loadBudgetData]);
+    fetchRemainingBudget();
+  }, [calculateBudgetAmount]);
 
-  const displayDate = new Date().toLocaleDateString("en-US", {
+  const date = new Date();
+  const displayDate = date.toLocaleDateString("en-US", {
     year: "numeric",
     month: "long",
     day: "numeric",
   });
-
-  const formatNumberWithCommas = (amount) =>
-    new Intl.NumberFormat("en-US").format(amount);
 
   if (isLoading) {
     return (
@@ -64,32 +55,62 @@ const BudgetOverview = () => {
     );
   }
 
+  function formatNumberWithCommas(amount) {
+    return new Intl.NumberFormat("en-US", {
+      // can use my-MM
+    }).format(amount);
+  }
+
   return (
     <View>
+      {/* Banner */}
       <View style={styles.banner}>
         <Text style={styles.date_label}>{displayDate}</Text>
         <View style={styles.balance}>
           <Text style={styles.label.total}>စုစုပေါင်း အသုံးစရိတ်</Text>
-          <Text style={styles.amount}>{formatNumberWithCommas(totalBudget)}</Text>
+          <Text style={styles.amount}>
+            {formatNumberWithCommas(totalBudget)}
+          </Text>
         </View>
         <View style={styles.balance}>
           <Text style={styles.label.remain}>စုစုပေါင်း အသုံးစရိတ်ကျန်ငွေ</Text>
-          <Text style={styles.amount}>{formatNumberWithCommas(totalRemainingBudget)}</Text>
+          <Text style={styles.amount}>
+            {formatNumberWithCommas(totalRemainingBudget)}
+          </Text>
         </View>
       </View>
 
+      {/* Small Cards */}
       <View style={styles.cardRow}>
         <View style={styles.card}>
           <Text style={styles.cardLabel.total}>ယနေ့ အသုံး စရိတ်</Text>
-          <Text style={styles.cardAmount}>{formatNumberWithCommas(dailyBudget)}</Text>
+          <Text
+            style={styles.cardAmount}
+            numberOfLines={1}
+            adjustsFontSizeToFit
+          >
+            {formatNumberWithCommas(dailyBudget)}
+          </Text>
         </View>
         <View style={styles.card}>
           <Text style={styles.cardLabel.spent}>ယနေ့ အသုံးပြုပြီး ငွေ</Text>
-          <Text style={styles.cardAmount}>{formatNumberWithCommas(spentToday)}</Text>
+          <Text
+            style={styles.cardAmount}
+            numberOfLines={1}
+            adjustsFontSizeToFit
+          >
+            {spentToday}
+          </Text>
         </View>
         <View style={styles.card}>
           <Text style={styles.cardLabel.remain}>ယနေ့ အသုံး စရိတ် ကျန်ငွေ</Text>
-          <Text style={styles.cardAmount}>{formatNumberWithCommas(dailyRemain)}</Text>
+          <Text
+            style={styles.cardAmount}
+            numberOfLines={1}
+            adjustsFontSizeToFit
+          >
+            {dailyRemain}
+          </Text>
         </View>
       </View>
     </View>
@@ -97,7 +118,6 @@ const BudgetOverview = () => {
 };
 
 export default BudgetOverview;
-
 
 const styles = StyleSheet.create({
   banner: {
@@ -183,3 +203,14 @@ const styles = StyleSheet.create({
     marginTop: 5,
   },
 });
+
+// balanceGrowth: {
+//   alignItems: "flex-end",
+//   paddingTop: 10,
+// },
+// growth: {
+//   color: "#6f6",
+// },
+// <View style={styles.balanceGrowth}>
+//   <Text style={styles.growth}>+520 Today</Text>
+// </View>;
