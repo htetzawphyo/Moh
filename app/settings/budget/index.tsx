@@ -42,7 +42,7 @@ const BudgetScreen: React.FC = () => {
       if (db) {
         const result = await db.select().from(budgets).all();
         setBudgetList(result);
-        console.log("Fetched budgets:", result);
+        // console.log("Fetched budgets:", result);
       }
     } catch (err: any) {
       console.error("Error fetching budgets:", err);
@@ -227,6 +227,9 @@ const BudgetScreen: React.FC = () => {
       return;
     }
 
+    console.log('budget id: ', id);
+    
+
     try {
       if (currentStatus) {
         Alert.alert(
@@ -278,6 +281,12 @@ const BudgetScreen: React.FC = () => {
                   .run();
 
                 await db
+                  .update(userBudgets)
+                  .set({ isActive: false })
+                  .where(not(eq(userBudgets.budgetId, id)))
+                  .run();
+
+                const activeBudget = await db
                   .update(budgets)
                   .set({ isActive: true })
                   .where(eq(budgets.id, id))
@@ -285,10 +294,15 @@ const BudgetScreen: React.FC = () => {
 
                 await db.delete(todayExpenses);
 
-                await db.insert(userBudgets).values({
+                const activeUser = await db.insert(userBudgets).values({
                   budgetId: id,
                   isActive: true
                 });
+
+                console.log('start active info===============');
+                console.log('active budget: ', activeBudget);
+                console.log('active user: ', activeUser);                
+                console.log('end active info===============');
 
                 fetchBudgets();
               },

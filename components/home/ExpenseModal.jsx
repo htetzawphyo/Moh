@@ -1,3 +1,8 @@
+import calculateDailyBudget from "@/utils/calculateDailyBudget";
+import useAddExpense from "@/utils/useAddExpense";
+import useCalculateSpentToday from "@/utils/useCalculateSpentToday";
+import useCalculateTotalRemainingBudget from "@/utils/useCalculateTotalRemainingBudget";
+import useFetchCategories from "@/utils/useFetchCategories";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useEffect, useState } from "react";
 import {
@@ -12,36 +17,42 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import useFetchCategories from "@/utils/useFetchCategories";
-import useAddExpense from "@/utils/useAddExpense";
 
-const ExpenseModal = ({ modalVisible, setModalVisible }) => {
+const ExpenseModal = ({ modalVisible, setModalVisible, onExpenseAdded }) => {
   const [title, setTitle] = useState("");
   const [amount, setAmount] = useState("");
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [categoryModalVisible, setCategoryModalVisible] = useState(false);
 
-  const { categoryList, isLoadingCategories, errorCategories } = useFetchCategories();
+  const { categoryList, isLoadingCategories, errorCategories } =
+    useFetchCategories();
   const { addExpense, addError, addSuccess, resetStatus } = useAddExpense();
+
+  const fetchRemainingBudget = useCalculateTotalRemainingBudget();
+  const calculateSpentToday = useCalculateSpentToday();
 
   useEffect(() => {
     if (addSuccess) {
       Alert.alert("Success", "Expense added successfully!");
       setModalVisible(false);
-      setTitle(''); 
-      setAmount('');
+      setTitle("");
+      setAmount("");
       setSelectedCategory(null);
       resetStatus();
+      onExpenseAdded?.();
     }
     if (addError) {
       Alert.alert("Error", `Failed to add expense: ${addError.message}`);
       resetStatus();
     }
-  }, [addSuccess, addError, resetStatus, setModalVisible]);
+  }, [addSuccess, addError]);
 
   const handleSubmit = async () => {
-    if (!title || !amount || !selectedCategory) { 
-      Alert.alert("Missing Information", "Please fill in all fields and select a category.");
+    if (!title || !amount || !selectedCategory) {
+      Alert.alert(
+        "Missing Information",
+        "Please fill in all fields and select a category."
+      );
       return;
     }
 
@@ -53,14 +64,36 @@ const ExpenseModal = ({ modalVisible, setModalVisible }) => {
 
     setModalVisible(false);
 
+    const result = await fetchRemainingBudget();
+    const fetchedTotalBudget = result?.totalBudget || 0;
+    const startDate = result?.startDate
+      ? new Date(result.startDate)
+      : new Date();
+    const endDate = result?.endDate ? new Date(result.endDate) : new Date();
+
+    const computedDailyBudget = calculateDailyBudget(
+      fetchedTotalBudget,
+      startDate,
+      endDate
+    );
+    const todaySpent = await calculateSpentToday();
+    const computedDailyRemain = computedDailyBudget - todaySpent;
+
+    console.log('remain amount: ', computedDailyRemain);
+    console.log('add amount: ', amount);
+    if(amount > computedDailyRemain){
+      Alert.alert("Limit ပြည့်ပါပြီ", `ယနေ့ အသုံးစရိတ်သည် ${computedDailyRemain} သာ ကျန်ရှိပါသည်။`);
+      return;
+    }
+
     const expenseData = {
       title: title,
       categoryId: selectedCategory.id,
-      amount: amount
-    }
+      amount: amount,
+    };
 
-    await addExpense(expenseData);    
-  }
+    await addExpense(expenseData);
+  };
 
   return (
     <Modal

@@ -1,10 +1,16 @@
 import useFetchCategories from "@/utils/useFetchCategories";
 import useTodayExpenses from "@/utils/useTodayExpense";
 import { MaterialIcons } from "@expo/vector-icons";
-import { ActivityIndicator, FlatList, StyleSheet, Text, View } from "react-native";
+import {
+  ActivityIndicator,
+  FlatList,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 
-const ExpenseCard = () => {
-  const { expenses, isLoading, error } = useTodayExpenses();
+const ExpenseCard = ({ refreshKey }) => {
+  const { expenses, isLoading, error } = useTodayExpenses(refreshKey);
   const { categoryList } = useFetchCategories();
 
   const getCategoryInfo = (categoryId) =>
@@ -42,11 +48,9 @@ const ExpenseCard = () => {
   if (!isLoading && expenses.length === 0) {
     return (
       <View style={{ alignItems: "center", marginTop: 40 }}>
-        <Text style={styles.emptyText}>
-          ယနေ့အတွက် အသုံးပြုမှုမရှိသေးပါ။
-        </Text>
+        <Text style={styles.emptyText}>ယနေ့အတွက် အသုံးပြုမှုမရှိသေးပါ။</Text>
         <Text style={{ color: "#888", marginTop: 10, lineHeight: 26 }}>
-          အသစ်တစ်ခုထည့်ရန် "+" ခလုတ်ကိုနှိပ်ပါ။
+          {`အသစ်တစ်ခုထည့်ရန် "+" ခလုတ်ကိုနှိပ်ပါ။`}
         </Text>
       </View>
     );
@@ -91,7 +95,6 @@ const styles = StyleSheet.create({
     textAlign: "center",
     fontWeight: "600",
   },
-  
 });
 // card: {
 //     backgroundColor: '#fff',

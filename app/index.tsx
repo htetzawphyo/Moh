@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useFocusEffect } from "expo-router";
+import { useCallback, useState } from "react";
 import {
   Platform,
   SafeAreaView,
@@ -14,21 +15,34 @@ import ExpenseModal from "../components/home/ExpenseModal";
 
 export default function Home() {
   const [modalVisible, setModalVisible] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  const handleExpenseAdded = () => {
+    setRefreshKey((prev) => prev + 1);
+    console.log("key change...");
+  };
+  useFocusEffect(
+    useCallback(() => {
+      handleExpenseAdded();
+      return () => {};
+    }, [])
+  );
 
   return (
     <SafeAreaView style={styles.container}>
       <View>
-        <BudgetOverview />
+        <BudgetOverview refreshKey={refreshKey} />
       </View>
       <View style={styles.moreActionBar}></View>
       <View style={styles.transactions}>
         <Text style={styles.label}>ယနေ့ ကုန်ကျငွေစားရင်း</Text>
-        <ExpenseCard />
+        <ExpenseCard refreshKey={refreshKey} />
       </View>
       <AddButton setModalVisible={setModalVisible} />
       <ExpenseModal
         modalVisible={modalVisible}
         setModalVisible={setModalVisible}
+        onExpenseAdded={handleExpenseAdded}
       />
     </SafeAreaView>
   );

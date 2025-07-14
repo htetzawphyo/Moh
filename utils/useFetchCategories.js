@@ -22,7 +22,6 @@ const useFetchCategories = () => {
         const result = await db.select().from(categories).all();
 
         setCategoryList(result); 
-        console.log("Fetched categories: ..................");
       } catch (error) {
         console.error("Error fetching categories:", error);
         setErrorCategories(error); 

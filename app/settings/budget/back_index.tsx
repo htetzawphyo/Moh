@@ -51,7 +51,7 @@ const Budget = () => {
   };
 
   const handleSubmit = () => {
-    console.log("Total Budget:", totalBudget);
+    // console.log("Total Budget:", totalBudget);
     console.log("Start Date:", startDate.toISOString());
     console.log("End Date:", endDate.toISOString());
     alert("Budget Submitted!");

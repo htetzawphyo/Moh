@@ -1,6 +1,6 @@
 import { budgets, expenses, userBudgets } from "@/database/schema";
 import { useDbStore } from "@/store/dbStore";
-import { eq, sum } from "drizzle-orm";
+import { eq, sum, and } from "drizzle-orm";
 import { useCallback } from "react";
 
 const useCalculateTotalRemainingBudget = () => {
@@ -15,7 +15,6 @@ const useCalculateTotalRemainingBudget = () => {
     }
 
     try {
-      // ၁။ User ရဲ့ လက်ရှိ Active ဖြစ်နေတဲ့ Budget ကို ရှာမယ်
       const activeUserBudget = await db
         .select()
         .from(userBudgets)
@@ -24,7 +23,7 @@ const useCalculateTotalRemainingBudget = () => {
 
       if (!activeUserBudget) {
         console.log("No active user budget found.");
-        return 0; 
+        return 0;
       }
 
       const budgetDetails = await db
@@ -34,8 +33,16 @@ const useCalculateTotalRemainingBudget = () => {
           endDate: budgets.endDate,
         })
         .from(budgets)
-        .where(eq(budgets.id, activeUserBudget.budgetId))
+        .where(
+          and(
+            eq(budgets.id, activeUserBudget.budgetId),
+            eq(budgets.isActive, true)
+          )
+        )
         .get();
+
+      console.log('budget detail: ', budgetDetails);
+      
 
       if (!budgetDetails) {
         console.warn(
@@ -60,9 +67,9 @@ const useCalculateTotalRemainingBudget = () => {
 
       const totalRemainingBudget = totalBudget - totalSpent;
 
-      console.log(
-        `Total Budget: ${totalBudget}, Total Spent: ${totalSpent}, Total Remaining: ${totalRemainingBudget}`
-      );
+      // console.log(
+      //   `Total Budget: ${totalBudget}, Total Spent: ${totalSpent}, Total Remaining: ${totalRemainingBudget}`
+      // );
       return {
         totalBudget,
         totalRemainingBudget,

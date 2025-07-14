@@ -2,7 +2,7 @@ import { todayExpenses } from "@/database/schema";
 import { useDbStore } from "@/store/dbStore";
 import { useCallback, useEffect, useState } from "react";
 
-const useTodayExpenses = () => {
+const useTodayExpenses = (refreshKey) => {
   const { db, dbLoaded } = useDbStore();
   const [expenses, setExpenses] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -28,7 +28,7 @@ const useTodayExpenses = () => {
 
   useEffect(() => {
     fetchTodayExpenses();
-  }, [fetchTodayExpenses]);
+  }, [fetchTodayExpenses, refreshKey]);
 
   return {
     expenses,

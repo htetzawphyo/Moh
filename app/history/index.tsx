@@ -5,7 +5,8 @@ import { budgets } from "@/database/schema";
 import { useDbStore } from "@/store/dbStore";
 import { useFilterStore } from "@/store/filterStore";
 import { MaterialIcons } from "@expo/vector-icons";
-import { useEffect, useState } from "react";
+import { useFocusEffect } from "expo-router";
+import { useCallback, useEffect, useState } from "react";
 import {
   Platform,
   SafeAreaView,
@@ -16,41 +17,20 @@ import {
 } from "react-native";
 
 export default function History() {
-  const {db, dbLoaded} = useDbStore();
-  const [totalBudget, setTotalBudget] = useState<number | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    async function fetchBudget() {
-      console.log('hello');
-      
-      if (dbLoaded && db) { 
-        try {
-          const result = await db.select().from(budgets).limit(1);
-          if (result.length > 0) {
-            setTotalBudget(result[0].totalBudget);
-          } else {
-            setTotalBudget(0); 
-          }
-        } catch (error) {
-          console.error('Error fetching budget:', error);
-          setTotalBudget(null);
-        } finally {
-          setLoading(false);
-        }
-      }
-    }
-
-    setLoading(true); 
-    fetchBudget();
-  }, [dbLoaded, db])
-
   const filterType = useFilterStore((state) => state.filterType);
   const filterValue = useFilterStore((state) => state.filterValue);
 
-  if (loading) {
-    return <Text>Loading budget...</Text>;
-  }
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  const handleKeyChange = () => {
+      setRefreshKey((prev) => prev + 1);
+    };
+    useFocusEffect(
+      useCallback(() => {
+        handleKeyChange();
+        return () => {};
+      }, [])
+    );
 
   return (
     <SafeAreaView style={styles.container}>
@@ -80,7 +60,7 @@ export default function History() {
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
           <Text style={styles.title_label}>Past Expenses</Text>
         </View>
-        <Expenses />
+        <Expenses refreshKey={refreshKey}/>
       </View>
     </SafeAreaView>
   );
