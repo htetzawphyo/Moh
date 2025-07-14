@@ -35,13 +35,12 @@ const useAddExpense = () => {
 
       const todayDate = format(new Date(), 'yyyy-MM-dd'); 
 
-      // Expenses Table ထဲသို့ ထည့်သွင်းခြင်း
       await db.insert(expenses).values({
         userBudgetId: activeUserBudget.id,
         title: data.title,
         categoryId: data.categoryId,
         amount: data.amount,
-        expenseDate: todayDate, // လက်ရှိနေ့စွဲကို ထည့်သွင်း
+        expenseDate: todayDate,
       }).run();
 
       // TodayExpenses Table ထဲသို့ ထည့်သွင်းခြင်း
@@ -50,7 +49,7 @@ const useAddExpense = () => {
         title: data.title,
         categoryId: data.categoryId,
         amount: data.amount,
-        expenseDate: todayDate, // လက်ရှိနေ့စွဲကို ထည့်သွင်း
+        expenseDate: todayDate,
       }).run();
 
       setAddSuccess(true);
@@ -62,9 +61,8 @@ const useAddExpense = () => {
     } finally {
       setIsAdding(false);
     }
-  }, [db, dbLoaded]); // db instance ဒါမှမဟုတ် dbLoaded ပြောင်းလဲရင် useCallback ကို ပြန်ဖန်တီး
+  }, [db, dbLoaded]); 
 
-  // Add လုပ်ပြီးရင် Success/Error status တွေကို reset လုပ်ဖို့
   const resetStatus = useCallback(() => {
     setAddSuccess(false);
     setAddError(null);

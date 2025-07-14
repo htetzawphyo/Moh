@@ -71,13 +71,13 @@ async function seedCategories(drizzleDb: ReturnType<typeof drizzle>) {
         // Food & Dining
         { name: "Dining Out", icon: "restaurant" },
         { name: "Groceries", icon: "local-grocery-store" },
-        { name: "Coffee/Cafes", icon: "coffee" }, // Changed from Starbucks to be more general
+        { name: "Coffee/Cafes", icon: "coffee" }, 
         { name: "Snacks", icon: "fastfood" },
         { name: "Alcohol", icon: "local-bar" },
         { name: "Takeaway/Delivery", icon: "delivery-dining" },
 
         // Transportation
-        { name: "Ride-sharing", icon: "directions-car" }, // Changed from Uber to be more general
+        { name: "Ride-sharing", icon: "directions-car" }, 
         { name: "Public Transport", icon: "directions-bus" },
         { name: "Fuel/Gas", icon: "local-gas-station" },
         { name: "Car Maintenance", icon: "car-repair" },
@@ -89,7 +89,7 @@ async function seedCategories(drizzleDb: ReturnType<typeof drizzle>) {
         { name: "Water Bill", icon: "water" },
         { name: "Internet Bill", icon: "wifi" },
         { name: "Phone Bill", icon: "phone" },
-        { name: "Gas Bill", icon: "whatshot" }, // For cooking/heating gas
+        { name: "Gas Bill", icon: "whatshot" }, 
         { name: "Rent/Mortgage", icon: "home" },
         { name: "Property Tax", icon: "account-balance" },
 
@@ -97,15 +97,15 @@ async function seedCategories(drizzleDb: ReturnType<typeof drizzle>) {
         { name: "Clothing", icon: "checkroom" },
         { name: "Books", icon: "book" },
         { name: "Electronics", icon: "devices" },
-        { name: "Home Goods/Decor", icon: "lightbulb-outline" }, // Or 'home-mini'
-        { name: "Personal Care", icon: "face" }, // Or 'spa'
+        { name: "Home Goods/Decor", icon: "lightbulb-outline" }, 
+        { name: "Personal Care", icon: "face" }, 
         { name: "Gifts", icon: "card-giftcard" },
-        { name: "Jewelry", icon: "watch" }, // Or 'diamond' if available in another set
-        { name: "Subscriptions", icon: "subscriptions" }, // Generic for Netflix, Spotify etc.
+        { name: "Jewelry", icon: "watch" },
+        { name: "Subscriptions", icon: "subscriptions" }, 
 
         // Entertainment & Leisure
-        { name: "Streaming Services", icon: "tv" }, // Generic for Netflix
-        { name: "Music Subscriptions", icon: "music-note" }, // Generic for Spotify
+        { name: "Streaming Services", icon: "tv" }, 
+        { name: "Music Subscriptions", icon: "music-note" }, 
         { name: "Movies/Cinema", icon: "theaters" },
         { name: "Concerts/Events", icon: "event" },
         { name: "Hobbies", icon: "extension" },
@@ -114,16 +114,16 @@ async function seedCategories(drizzleDb: ReturnType<typeof drizzle>) {
 
         // Health & Wellness
         { name: "Gym", icon: "fitness-center" },
-        { name: "Medical", icon: "local-hospital" }, // General for Doctor/Medical Appointments
+        { name: "Medical", icon: "local-hospital" }, 
         { name: "Medication/Pharmacy", icon: "local-pharmacy" },
         { name: "Health Insurance", icon: "health-and-safety" },
-        { name: "Fitness Classes", icon: "self-improvement" }, // Or 'sports-handball'
+        { name: "Fitness Classes", icon: "self-improvement" },
         { name: "Therapy/Counseling", icon: "psychology" },
 
         // Financial
-        { name: "Insurance", icon: "shield" }, // General insurance
+        { name: "Insurance", icon: "shield" }, 
         { name: "Charity", icon: "favorite" },
-        { name: "Loan Repayments", icon: "receipt" }, // Or 'paid'
+        { name: "Loan Repayments", icon: "receipt" }, 
         { name: "Savings", icon: "savings" },
         { name: "Investments", icon: "trending-up" },
         { name: "Bank Fees", icon: "credit-card" },
@@ -136,7 +136,7 @@ async function seedCategories(drizzleDb: ReturnType<typeof drizzle>) {
 
         // Children & Pets
         { name: "Childcare/Daycare", icon: "child-care" },
-        { name: "School Supplies", icon: "auto-stories" }, // Or 'pencil'
+        { name: "School Supplies", icon: "auto-stories" },
         { name: "Toys", icon: "toys" },
         { name: "Pet Food", icon: "pets" },
         { name: "Vet Bills", icon: "healing" },
@@ -150,7 +150,7 @@ async function seedCategories(drizzleDb: ReturnType<typeof drizzle>) {
         { name: "Legal Fees", icon: "gavel" },
         { name: "Work Expenses", icon: "work" },
         { name: "Unexpected Expenses", icon: "error-outline" },
-        { name: "Miscellaneous", icon: "more-horiz" }, // General catch-all
+        { name: "Miscellaneous", icon: "more-horiz" }, 
       ];
 
       await drizzleDb.insert(schema.categories).values(defaultCategories);

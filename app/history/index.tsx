@@ -24,14 +24,13 @@ export default function History() {
     async function fetchBudget() {
       console.log('hello');
       
-      if (dbLoaded && db) { // Database load ပြီးပြီဆိုတာ သေချာမှ query လုပ်ပါ။
+      if (dbLoaded && db) { 
         try {
-          // ဥပမာ: Budget Table ထဲက ပထမဆုံး Budget ရဲ့ totalBudget ကို ယူတာ
           const result = await db.select().from(budgets).limit(1);
           if (result.length > 0) {
             setTotalBudget(result[0].totalBudget);
           } else {
-            setTotalBudget(0); // No budgets found
+            setTotalBudget(0); 
           }
         } catch (error) {
           console.error('Error fetching budget:', error);
@@ -42,7 +41,7 @@ export default function History() {
       }
     }
 
-    setLoading(true); // Fetching မစခင် loading ကို true ထား
+    setLoading(true); 
     fetchBudget();
   }, [dbLoaded, db])
 

@@ -6,7 +6,7 @@ import { StyleSheet, Text, View } from "react-native";
 
 const BudgetOverview = () => {
   const fetchRemainingBudget = useCalculateTotalRemainingBudget();
-  const spentToday = useCalculateSpentToday(); // ✅ Just value, not function
+  const spentToday = useCalculateSpentToday();
 
   const [totalBudget, setTotalBudget] = useState(0);
   const [totalRemainingBudget, setTotalRemainingBudget] = useState(0);
@@ -41,8 +41,7 @@ const BudgetOverview = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [fetchRemainingBudget, spentToday]); // ✅ Remove useCalculateSpentToday
-
+  }, [fetchRemainingBudget, spentToday]);
   useEffect(() => {
     loadBudgetData();
   }, [loadBudgetData]);
