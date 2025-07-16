@@ -1,12 +1,10 @@
 import CategoryFilter from "@/components/history/CategoryFilter";
 import DateFilter from "@/components/history/DateFilter";
 import Expenses from "@/components/history/Expenses";
-import { budgets } from "@/database/schema";
-import { useDbStore } from "@/store/dbStore";
 import { useFilterStore } from "@/store/filterStore";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useFocusEffect } from "expo-router";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import {
   Platform,
   SafeAreaView,
@@ -23,14 +21,14 @@ export default function History() {
   const [refreshKey, setRefreshKey] = useState(0);
 
   const handleKeyChange = () => {
-      setRefreshKey((prev) => prev + 1);
-    };
-    useFocusEffect(
-      useCallback(() => {
-        handleKeyChange();
-        return () => {};
-      }, [])
-    );
+    setRefreshKey((prev) => prev + 1);
+  };
+  useFocusEffect(
+    useCallback(() => {
+      handleKeyChange();
+      return () => { };
+    }, [])
+  );
 
   return (
     <SafeAreaView style={styles.container}>
@@ -60,7 +58,7 @@ export default function History() {
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
           <Text style={styles.title_label}>Past Expenses</Text>
         </View>
-        <Expenses refreshKey={refreshKey}/>
+        <Expenses refreshKey={refreshKey} />
       </View>
     </SafeAreaView>
   );

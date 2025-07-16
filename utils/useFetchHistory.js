@@ -1,16 +1,20 @@
-import { useEffect, useState } from "react";
-import { expenses, categories, userBudgets } from "@/database/schema";
-import { eq } from "drizzle-orm";
+import { categories, expenses, userBudgets } from "@/database/schema";
 import { useDbStore } from "@/store/dbStore";
+import { useFilterStore } from "@/store/filterStore";
+import { eq, and } from "drizzle-orm";
+import { useEffect, useState } from "react";
 
 export const useFetchHistory = (refreshKey) => {
   const { db } = useDbStore();
+  const filterType = useFilterStore((state) => state.filterType);
+  const filterValue = useFilterStore((state) => state.filterValue);
   const [data, setData] = useState([]);
   const [isLoading, setLoading] = useState(true);
-  
+
 
   useEffect(() => {
     const fetchHistory = async () => {
+      setLoading(true);
       try {
         const activeUserBudget = await db
           .select()
@@ -23,6 +27,20 @@ export const useFetchHistory = (refreshKey) => {
           return;
         }
 
+        // Build where condition dynamically
+        const baseCondition = eq(expenses.userBudgetId, activeUserBudget.id);
+
+        let filterCondition;
+        if (filterType === "CATEGORY") {
+          filterCondition = eq(categories.name, filterValue);
+        } else if (filterType === "DATE") {
+          filterCondition = eq(expenses.expenseDate, filterValue);
+        }
+
+        const whereClause = filterCondition
+          ? and(baseCondition, filterCondition)
+          : baseCondition;
+
         const result = await db
           .select({
             id: expenses.id,
@@ -32,7 +50,7 @@ export const useFetchHistory = (refreshKey) => {
             icon: categories.icon,
           })
           .from(expenses)
-          .where(eq(expenses.userBudgetId, activeUserBudget.id))
+          .where(whereClause)
           .innerJoin(categories, eq(expenses.categoryId, categories.id))
           .all();
 
@@ -54,7 +72,7 @@ export const useFetchHistory = (refreshKey) => {
     };
 
     fetchHistory();
-  }, [db, refreshKey]);
+  }, [db, refreshKey, filterType, filterValue]);
 
   return { data, isLoading };
 };

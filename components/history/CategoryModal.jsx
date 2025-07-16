@@ -1,6 +1,8 @@
 import { useFilterStore } from "@/store/filterStore";
+import useFetchCategories from "@/utils/useFetchCategories";
 import { MaterialIcons } from "@expo/vector-icons";
 import {
+  ActivityIndicator,
   Alert,
   Modal,
   ScrollView,
@@ -12,34 +14,21 @@ import {
 
 const CategoryModal = ({ modalVisible, setModalVisible }) => {
   const setFilter = useFilterStore((state) => state.setFilter);
-
-  const categories = [
-    { id: 1, name: "Starbucks", icon: "coffee" },
-    { id: 2, name: "Amazon", icon: "shopping-cart" },
-    { id: 3, name: "Uber", icon: "directions-car" },
-    { id: 4, name: "Netflix", icon: "tv" },
-    { id: 5, name: "Groceries", icon: "local-grocery-store" },
-    { id: 6, name: "Gym", icon: "fitness-center" },
-    { id: 7, name: "Dining Out", icon: "restaurant" },
-    { id: 8, name: "Spotify", icon: "music-note" },
-    { id: 9, name: "Electricity Bill", icon: "flash-on" },
-    { id: 10, name: "Water Bill", icon: "water" },
-    { id: 11, name: "Internet Bill", icon: "wifi" },
-    { id: 12, name: "Phone Bill", icon: "phone" },
-    { id: 13, name: "Clothing", icon: "checkroom" },
-    { id: 14, name: "Books", icon: "book" },
-    { id: 15, name: "Travel", icon: "flight" },
-    { id: 16, name: "Insurance", icon: "shield" },
-    { id: 17, name: "Charity", icon: "favorite" },
-    { id: 18, name: "Pet Care", icon: "pets" },
-    { id: 19, name: "Subscriptions", icon: "subscriptions" },
-    { id: 20, name: "Miscellaneous", icon: "more-horiz" },
-  ];
+  const { categoryList, isLoadingCategories, errorCategories } = useFetchCategories();
 
   const handleCategorySelect = (category) => {
     setModalVisible(false);
     setFilter("CATEGORY", category);
   };
+
+  if (isLoadingCategories) {
+    return <ActivityIndicator />;
+  }
+
+  if (errorCategories) {
+    return <Text>Error loading categories</Text>;
+  }
+
 
   return (
     <Modal
@@ -59,7 +48,7 @@ const CategoryModal = ({ modalVisible, setModalVisible }) => {
         <View style={styles.modalView}>
           <Text style={styles.modalTitle}>Filter Category</Text>
           <ScrollView style={styles.categoriesContainer}>
-            {categories.map((category) => (
+            {categoryList.map((category) => (
               <TouchableOpacity
                 key={category.id}
                 style={styles.categoryItem}

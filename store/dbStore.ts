@@ -89,9 +89,12 @@ async function seedCategories(drizzleDb: ReturnType<typeof drizzle>) {
         { name: "Other", icon: "category" },
 
         // Food & Dining
+        { name: "Noodles", icon: "ramen-dining" },
+        { name: "HotPot", icon: "soup-kitchen" },
+        { name: "Coffee/Cafes", icon: "coffee" },
+        { name: "Cigarettes", icon: "smoking-rooms" },
         { name: "Dining Out", icon: "restaurant" },
         { name: "Groceries", icon: "local-grocery-store" },
-        { name: "Coffee/Cafes", icon: "coffee" },
         { name: "Snacks", icon: "fastfood" },
         { name: "Alcohol", icon: "local-bar" },
         { name: "Takeaway/Delivery", icon: "delivery-dining" },
