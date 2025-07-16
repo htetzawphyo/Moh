@@ -21,37 +21,57 @@ export const useDbStore = create<DbState>((set, get) => ({
   db: null,
   dbLoaded: false,
   dbError: null,
+
   initializeDb: async () => {
     const { dbLoaded, dbError } = get();
+
     if (dbLoaded || dbError) {
-      console.log(
-        "Database already loaded or failed previously, not re-initializing."
-      );
+      console.log("[DB] Already initialized or error occurred previously.");
       return;
     }
 
     try {
-      const expoDb = await SQLite.openDatabaseAsync(DATABASE_NAME);
+      console.log("[DB] Opening database...");
+      const expoDb = await SQLite.openDatabaseAsync(DATABASE_NAME, {
+        useNewConnection: true
+      });
+
+      console.log("[DB] Creating Drizzle instance...");
       const drizzleDb = drizzle(expoDb, { schema });
 
+      console.log("[DB] Applying migrations...");
       await migrate(drizzleDb, migrations);
-      console.log("Database initialized and migrations applied successfully!");
 
-      // Seed categories table
+      console.log("[DB] Seeding initial data...");
       await seedCategories(drizzleDb);
 
-      set({ db: drizzleDb, dbLoaded: true, dbError: null });
+      set({
+        db: drizzleDb,
+        dbLoaded: true,
+        dbError: null,
+      });
+
+      console.log("[DB] Database initialized successfully ✅");
     } catch (error: any) {
-      console.error(
-        "Failed to initialize database or apply migrations:",
-        error
-      );
-      set({ db: null, dbLoaded: false, dbError: error });
+      console.error("[DB] Initialization failed ❌", error);
+
+      set({
+        db: null,
+        dbLoaded: false,
+        dbError: error instanceof Error
+          ? error
+          : new Error("Unknown database initialization error."),
+      });
     }
   },
+
   resetDbState: () => {
-    console.log("Resetting database state...");
-    set({ db: null, dbLoaded: false, dbError: null });
+    console.log("[DB] Resetting store state...");
+    set({
+      db: null,
+      dbLoaded: false,
+      dbError: null,
+    });
   },
 }));
 
@@ -71,13 +91,13 @@ async function seedCategories(drizzleDb: ReturnType<typeof drizzle>) {
         // Food & Dining
         { name: "Dining Out", icon: "restaurant" },
         { name: "Groceries", icon: "local-grocery-store" },
-        { name: "Coffee/Cafes", icon: "coffee" }, 
+        { name: "Coffee/Cafes", icon: "coffee" },
         { name: "Snacks", icon: "fastfood" },
         { name: "Alcohol", icon: "local-bar" },
         { name: "Takeaway/Delivery", icon: "delivery-dining" },
 
         // Transportation
-        { name: "Ride-sharing", icon: "directions-car" }, 
+        { name: "Ride-sharing", icon: "directions-car" },
         { name: "Public Transport", icon: "directions-bus" },
         { name: "Fuel/Gas", icon: "local-gas-station" },
         { name: "Car Maintenance", icon: "car-repair" },
@@ -89,7 +109,7 @@ async function seedCategories(drizzleDb: ReturnType<typeof drizzle>) {
         { name: "Water Bill", icon: "water" },
         { name: "Internet Bill", icon: "wifi" },
         { name: "Phone Bill", icon: "phone" },
-        { name: "Gas Bill", icon: "whatshot" }, 
+        { name: "Gas Bill", icon: "whatshot" },
         { name: "Rent/Mortgage", icon: "home" },
         { name: "Property Tax", icon: "account-balance" },
 
@@ -97,15 +117,15 @@ async function seedCategories(drizzleDb: ReturnType<typeof drizzle>) {
         { name: "Clothing", icon: "checkroom" },
         { name: "Books", icon: "book" },
         { name: "Electronics", icon: "devices" },
-        { name: "Home Goods/Decor", icon: "lightbulb-outline" }, 
-        { name: "Personal Care", icon: "face" }, 
+        { name: "Home Goods/Decor", icon: "lightbulb-outline" },
+        { name: "Personal Care", icon: "face" },
         { name: "Gifts", icon: "card-giftcard" },
         { name: "Jewelry", icon: "watch" },
-        { name: "Subscriptions", icon: "subscriptions" }, 
+        { name: "Subscriptions", icon: "subscriptions" },
 
         // Entertainment & Leisure
-        { name: "Streaming Services", icon: "tv" }, 
-        { name: "Music Subscriptions", icon: "music-note" }, 
+        { name: "Streaming Services", icon: "tv" },
+        { name: "Music Subscriptions", icon: "music-note" },
         { name: "Movies/Cinema", icon: "theaters" },
         { name: "Concerts/Events", icon: "event" },
         { name: "Hobbies", icon: "extension" },
@@ -114,16 +134,16 @@ async function seedCategories(drizzleDb: ReturnType<typeof drizzle>) {
 
         // Health & Wellness
         { name: "Gym", icon: "fitness-center" },
-        { name: "Medical", icon: "local-hospital" }, 
+        { name: "Medical", icon: "local-hospital" },
         { name: "Medication/Pharmacy", icon: "local-pharmacy" },
         { name: "Health Insurance", icon: "health-and-safety" },
         { name: "Fitness Classes", icon: "self-improvement" },
         { name: "Therapy/Counseling", icon: "psychology" },
 
         // Financial
-        { name: "Insurance", icon: "shield" }, 
+        { name: "Insurance", icon: "shield" },
         { name: "Charity", icon: "favorite" },
-        { name: "Loan Repayments", icon: "receipt" }, 
+        { name: "Loan Repayments", icon: "receipt" },
         { name: "Savings", icon: "savings" },
         { name: "Investments", icon: "trending-up" },
         { name: "Bank Fees", icon: "credit-card" },
@@ -150,7 +170,7 @@ async function seedCategories(drizzleDb: ReturnType<typeof drizzle>) {
         { name: "Legal Fees", icon: "gavel" },
         { name: "Work Expenses", icon: "work" },
         { name: "Unexpected Expenses", icon: "error-outline" },
-        { name: "Miscellaneous", icon: "more-horiz" }, 
+        { name: "Miscellaneous", icon: "more-horiz" },
       ];
 
       await drizzleDb.insert(schema.categories).values(defaultCategories);

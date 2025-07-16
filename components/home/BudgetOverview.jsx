@@ -99,7 +99,7 @@ const BudgetOverview = ({ refreshKey }) => {
           </Text>
         </View>
         <View style={styles.card}>
-          <Text style={styles.cardLabel.spent}>ယနေ့ အသုံးပြုပြီး ငွေ</Text>
+          <Text style={styles.cardLabel.spent}>ယနေ့ အသုံးပြုပြီး စရိတ်</Text>
           <Text style={styles.cardAmount}>
             {formatNumberWithCommas(todaySpent)}
           </Text>

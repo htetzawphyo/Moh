@@ -24,7 +24,7 @@ interface Budget {
 }
 
 const BudgetScreen: React.FC = () => {
-  const { db, dbLoaded, dbError, initializeDb, resetDbState } = useDbStore(); // dbError နဲ့ resetDbState ကို ရယူပါ
+  const { db, dbLoaded, dbError, initializeDb, resetDbState } = useDbStore(); 
   const [budgetList, setBudgetList] = useState<Budget[]>([]);
   const [newBudgetAmount, setNewBudgetAmount] = useState("");
 
@@ -67,7 +67,7 @@ const BudgetScreen: React.FC = () => {
       console.log("Triggering database initialization...");
       initializeDb();
     }
-  }, [dbLoaded, dbError, initializeDb]);
+  }, [dbLoaded, dbError]);
 
   // Fetch data once DB is loaded
   useEffect(() => {
@@ -177,7 +177,7 @@ const BudgetScreen: React.FC = () => {
     }
     Alert.alert(
       "ဤ Budget ကို ဖျက်မည်",
-      'အကယ်၍ သင်က ဤ Budget ကို အသုံးပြုနေပြီးတော့ ဖျက်လိုက်လျှင် "ယနေ့ အသုံးစားရိတ်" တွင် သင် ထည့်သွင်းမှတ်သားထားသည့် စားရင်းများရှိပါက ပျက်သွားပါမည်။ ဖျက်ချင်တာ သေချာပါသလား?',
+      'အကယ်၍ သင်က ဤ Budget ကို အသုံးပြုနေပြီးတော့ ဖျက်လိုက်လျှင် "ယနေ့ ကုန်ကျငွေစာရင်း" တွင် သင် ထည့်သွင်းမှတ်သားထားသည့် စာရင်းများရှိပါက ပျက်သွားပါမည်။ ဖျက်ချင်တာ သေချာပါသလား?',
       [
         {
           text: "မဖျက်တော့ပါ",
@@ -188,6 +188,7 @@ const BudgetScreen: React.FC = () => {
           onPress: async () => {
             try {
               await db.delete(budgets).where(eq(budgets.id, id)).run();
+              await db.delete(todayExpenses);
               console.log("Deleted budget with ID:", id);
               fetchBudgets();
             } catch (err: any) {
@@ -229,7 +230,6 @@ const BudgetScreen: React.FC = () => {
 
     console.log('budget id: ', id);
     
-
     try {
       if (currentStatus) {
         Alert.alert(
@@ -255,7 +255,7 @@ const BudgetScreen: React.FC = () => {
                   .where(eq(userBudgets.budgetId, id))
                   .run();
 
-                await db.delete(todayExpenses);
+                await db.delete(todayExpenses).run();
 
                 fetchBudgets();
               },
@@ -292,7 +292,7 @@ const BudgetScreen: React.FC = () => {
                   .where(eq(budgets.id, id))
                   .run();
 
-                await db.delete(todayExpenses);
+                await db.delete(todayExpenses).run();
 
                 const activeUser = await db.insert(userBudgets).values({
                   budgetId: id,

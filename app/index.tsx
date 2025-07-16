@@ -35,7 +35,7 @@ export default function Home() {
       </View>
       <View style={styles.moreActionBar}></View>
       <View style={styles.transactions}>
-        <Text style={styles.label}>ယနေ့ ကုန်ကျငွေစားရင်း</Text>
+        <Text style={styles.label}>ယနေ့ ကုန်ကျငွေစာရင်း</Text>
         <ExpenseCard refreshKey={refreshKey} />
       </View>
       <AddButton setModalVisible={setModalVisible} />
