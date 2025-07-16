@@ -58,6 +58,29 @@ export default function SettingsLayout() {
           ),
         }}
       />
+      <Stack.Screen
+        name="suggestion"
+        options={{
+          // headerShown: false
+          headerTitle: "Suggestion",
+          headerTitleAlign: "center",
+          headerTitleStyle: {
+            fontSize: 20,
+            fontWeight: "bold",
+          },
+          headerRight: () => (
+            <TouchableOpacity
+            >
+              <MaterialIcons
+                name="settings"
+                size={24}
+                color="black"
+                style={{ marginRight: 10 }}
+              />
+            </TouchableOpacity>
+          ),
+        }}
+      />
     </Stack>
   );
 }

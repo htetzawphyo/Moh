@@ -12,6 +12,7 @@ import {
 const Settings = () => {
   const navigateToCategory = () => router.push("/settings/category");
   const navigateToBudget = () => router.push("/settings/budget");
+  const navigateToSuggestion = () => router.push("/settings/suggestion");
 
   return (
     <SafeAreaView style={styles.container}>
@@ -23,6 +24,7 @@ const Settings = () => {
         <SettingsCard 
           onPressCategory={navigateToCategory}
           onPressBudget={navigateToBudget}
+          onPressSuggestion={navigateToSuggestion}
         />
       </View>
     </SafeAreaView>
