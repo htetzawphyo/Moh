@@ -1,5 +1,6 @@
 import { todayExpenses } from "@/database/schema";
 import { useDbStore } from "@/store/dbStore";
+import { desc } from "drizzle-orm";
 import { useCallback, useEffect, useState } from "react";
 
 const useTodayExpenses = (refreshKey) => {
@@ -15,7 +16,10 @@ const useTodayExpenses = (refreshKey) => {
 
     try {
       setIsLoading(true);
-      const results = await db.select().from(todayExpenses);
+      const results = await db
+        .select()
+        .from(todayExpenses)
+        .orderBy(desc(todayExpenses.expenseDate));
 
       setExpenses(results);
     } catch (err) {

@@ -1,7 +1,7 @@
 import { categories, expenses, userBudgets } from "@/database/schema";
 import { useDbStore } from "@/store/dbStore";
 import { useFilterStore } from "@/store/filterStore";
-import { eq, and } from "drizzle-orm";
+import { eq, and, desc } from "drizzle-orm";
 import { useEffect, useState } from "react";
 
 export const useFetchHistory = (refreshKey) => {
@@ -52,6 +52,7 @@ export const useFetchHistory = (refreshKey) => {
           .from(expenses)
           .where(whereClause)
           .innerJoin(categories, eq(expenses.categoryId, categories.id))
+          .orderBy(desc(expenses.expenseDate))
           .all();
 
         const formatted = result.map((item) => ({
