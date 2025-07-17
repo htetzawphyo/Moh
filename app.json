@@ -17,7 +17,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/app_logo-removebg.png",
+        "foregroundImage": "./assets/images/app_logo_tran.png",
         "backgroundColor": "#7BD9F6"
       },
       "edgeToEdgeEnabled": true,
@@ -33,7 +33,7 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/app_logo-removebg.png",
+          "image": "./assets/images/app_logo_tran.png",
           "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#7BD9F6"
