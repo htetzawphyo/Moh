@@ -368,6 +368,7 @@ const BudgetScreen: React.FC = () => {
         <TextInput
           style={styles.input}
           placeholder="Total Budget"
+          placeholderTextColor={"#666666"}
           keyboardType="numeric"
           value={newBudgetAmount}
           onChangeText={setNewBudgetAmount}
@@ -505,6 +506,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 0,
     marginBottom: 20,
     backgroundColor: "transparent",
+    color: '#666666',
   },
   fieldWrapper: {
     marginBottom: 20,

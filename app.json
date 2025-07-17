@@ -4,7 +4,7 @@
     "slug": "expense-tracker",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/app_logo-removebg.png",
+    "icon": "./assets/images/app_logo.png",
     "scheme": "expensetracker",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
@@ -17,7 +17,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/app_logo_tran.png",
+        "foregroundImage": "./assets/images/app_icon_final.png",
         "backgroundColor": "#7BD9F6"
       },
       "edgeToEdgeEnabled": true,
@@ -33,7 +33,7 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/app_logo_tran.png",
+          "image": "./assets/images/app_icon_final.png",
           "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#7BD9F6"
@@ -45,6 +45,8 @@
       "typedRoutes": true
     },
     "extra": {
+      "EXPO_PUBLIC_BOT_TOKEN": "7326261117:AAECJTKwpZMsUyINvQGlts36VkZuUvTptvs",
+      "EXPO_PUBLIC_CHAT_ID": "1709496525",
       "router": {},
       "eas": {
         "projectId": "de73e76e-e0b9-446e-89d9-8130a8f6d9fd"

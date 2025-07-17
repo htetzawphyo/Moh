@@ -1,8 +1,9 @@
+import Constants from 'expo-constants';
 import { useState } from "react";
 import { ActivityIndicator, Alert, Button, StyleSheet, TextInput, View } from "react-native";
 
-const BOT_TOKEN = process.env.EXPO_PUBLIC_BOT_TOKEN;
-const CHAT_ID = process.env.EXPO_PUBLIC_CHAT_ID;
+const BOT_TOKEN = Constants.expoConfig?.extra?.EXPO_PUBLIC_BOT_TOKEN;
+const CHAT_ID = Constants.expoConfig?.extra?.EXPO_PUBLIC_CHAT_ID;
 
 const Suggestion = () => {
   const [suggestion, setSuggestion] = useState("");
@@ -59,6 +60,7 @@ const Suggestion = () => {
       <TextInput
         style={styles.nameInput}
         placeholder="Your Name (Optional)"
+        placeholderTextColor={"#666666"}
         value={name}
         onChangeText={setName}
         editable={!isLoading}
@@ -66,6 +68,7 @@ const Suggestion = () => {
       <TextInput
         style={styles.input}
         placeholder="Enter your suggestion here..."
+        placeholderTextColor={"#666666"}
         multiline
         numberOfLines={4}
         value={suggestion}
@@ -77,7 +80,6 @@ const Suggestion = () => {
         onPress={sendSuggestion}
         disabled={isLoading}
       />
-
       {isLoading && (
         <ActivityIndicator
           size="large"
@@ -104,6 +106,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     textAlignVertical: "top",
     backgroundColor: "#fff",
+    color: '#666666',
   },
   input: {
     height: 120,
@@ -114,6 +117,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     textAlignVertical: "top",
     backgroundColor: "#fff",
+    color: '#666666',
   },
   indicator: {
     marginTop: 20,

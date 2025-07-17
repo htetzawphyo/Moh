@@ -112,6 +112,7 @@ const ExpenseModal = ({ modalVisible, setModalVisible, onExpenseAdded }) => {
             value={title}
             onChangeText={setTitle}
             placeholder="Enter title"
+            placeholderTextColor={"#666666"}
             style={styles.input}
           />
 
@@ -121,6 +122,7 @@ const ExpenseModal = ({ modalVisible, setModalVisible, onExpenseAdded }) => {
             value={amount}
             onChangeText={setAmount}
             placeholder="Enter amount"
+            placeholderTextColor={"#666666"}
             keyboardType="numeric"
             style={styles.input}
           />
