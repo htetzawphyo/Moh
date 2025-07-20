@@ -1,7 +1,4 @@
-import calculateDailyBudget from "@/utils/calculateDailyBudget";
 import useAddExpense from "@/utils/useAddExpense";
-import useCalculateSpentToday from "@/utils/useCalculateSpentToday";
-import useCalculateTotalRemainingBudget from "@/utils/useCalculateTotalRemainingBudget";
 import useFetchCategories from "@/utils/useFetchCategories";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useEffect, useState } from "react";
@@ -27,9 +24,6 @@ const ExpenseModal = ({ modalVisible, setModalVisible, onExpenseAdded }) => {
   const { categoryList, isLoadingCategories, errorCategories } =
     useFetchCategories();
   const { addExpense, addError, addSuccess, resetStatus } = useAddExpense();
-
-  const fetchRemainingBudget = useCalculateTotalRemainingBudget();
-  const calculateSpentToday = useCalculateSpentToday();
 
   useEffect(() => {
     if (addSuccess) {
@@ -63,28 +57,6 @@ const ExpenseModal = ({ modalVisible, setModalVisible, onExpenseAdded }) => {
     }
 
     setModalVisible(false);
-
-    const result = await fetchRemainingBudget();
-    const fetchedTotalBudget = result?.totalBudget || 0;
-    const startDate = result?.startDate
-      ? new Date(result.startDate)
-      : new Date();
-    const endDate = result?.endDate ? new Date(result.endDate) : new Date();
-
-    const computedDailyBudget = calculateDailyBudget(
-      fetchedTotalBudget,
-      startDate,
-      endDate
-    );
-    const todaySpent = await calculateSpentToday();
-    const computedDailyRemain = computedDailyBudget - todaySpent;
-
-    console.log('remain amount: ', computedDailyRemain);
-    console.log('add amount: ', amount);
-    if(amount > computedDailyRemain){
-      Alert.alert("Limit ပြည့်ပါပြီ", `ယနေ့ အသုံးစရိတ်သည် ${computedDailyRemain} သာ ကျန်ရှိပါသည်။`);
-      return;
-    }
 
     const expenseData = {
       title: title,

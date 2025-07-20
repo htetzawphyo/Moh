@@ -1,14 +1,15 @@
-import { budgets, todayExpenses, userBudgets } from "@/database/schema";
+import { budgets } from "@/database/schema";
 import { useDbStore } from "@/store/dbStore";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import { count, eq, not } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import React, { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
-  FlatList,
   Platform,
+  ScrollView,
   StyleSheet,
+  Switch,
   Text,
   TextInput,
   TouchableOpacity,
@@ -24,8 +25,8 @@ interface Budget {
 }
 
 const BudgetScreen: React.FC = () => {
-  const { db, dbLoaded, dbError, initializeDb, resetDbState } = useDbStore(); 
-  const [budgetList, setBudgetList] = useState<Budget[]>([]);
+  const { db, dbLoaded, dbError, initializeDb, resetDbState } = useDbStore();
+  const [currentBudget, setCurrentBudget] = useState<Budget | null>(null);
   const [newBudgetAmount, setNewBudgetAmount] = useState("");
 
   const [startDate, setStartDate] = useState(new Date());
@@ -34,21 +35,33 @@ const BudgetScreen: React.FC = () => {
   const [showStartDatePicker, setShowStartDatePicker] = useState(false);
   const [showEndDatePicker, setShowEndDatePicker] = useState(false);
 
+  const [budgetLimitAmount, setBudgetLimitAmount] = useState("");
+  const [showAlertOnLimit, setShowAlertOnLimit] = useState(false);
+
   const [loadingData, setLoadingData] = useState(true);
 
-  const fetchBudgets = useCallback(async () => {
+  const fetchBudget = useCallback(async () => {
     setLoadingData(true);
     try {
       if (db) {
         const result = await db.select().from(budgets).all();
-        setBudgetList(result);
-        // console.log("Fetched budgets:", result);
+        if (result.length > 0) {
+          setCurrentBudget(result[0]);
+          setNewBudgetAmount(result[0].totalBudget.toString());
+          setStartDate(new Date(result[0].startDate));
+          setEndDate(new Date(result[0].endDate));
+        } else {
+          setCurrentBudget(null);
+          setNewBudgetAmount("");
+          setStartDate(new Date());
+          setEndDate(new Date());
+        }
       }
     } catch (err: any) {
-      console.error("Error fetching budgets:", err);
+      console.error("Error fetching budget:", err);
       Alert.alert(
         "Error",
-        "Failed to fetch budgets: " + (err.message || "Unknown error.")
+        "Failed to fetch budget: " + (err.message || "Unknown error.")
       );
 
       useDbStore.setState({
@@ -72,15 +85,30 @@ const BudgetScreen: React.FC = () => {
   // Fetch data once DB is loaded
   useEffect(() => {
     if (dbLoaded && db && !dbError) {
-      fetchBudgets();
+      fetchBudget();
     }
-  }, [dbLoaded, db, dbError, fetchBudgets]);
+  }, [dbLoaded, db, dbError, fetchBudget]);
 
-  const formatDateForDb = (date: Date): string => {
-    const year = date.getFullYear();
-    const month = (date.getMonth() + 1).toString().padStart(2, "0");
-    const day = date.getDate().toString().padStart(2, "0");
-    return `${year}-${month}-${day}`;
+  const formatDateForDb = (
+    date: Date,
+    type: "start" | "end" = "start"
+  ): string => {
+    const clonedDate = new Date(date);
+
+    if (type === "start") {
+      clonedDate.setHours(0, 0, 0, 0);
+    } else if (type === "end") {
+      clonedDate.setHours(23, 59, 59, 999);
+    }
+
+    const year = clonedDate.getFullYear();
+    const month = (clonedDate.getMonth() + 1).toString().padStart(2, "0");
+    const day = clonedDate.getDate().toString().padStart(2, "0");
+    const hours = clonedDate.getHours().toString().padStart(2, "0");
+    const minutes = clonedDate.getMinutes().toString().padStart(2, "0");
+    const seconds = clonedDate.getSeconds().toString().padStart(2, "0");
+
+    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
   };
 
   const handleDateChange = (
@@ -100,12 +128,12 @@ const BudgetScreen: React.FC = () => {
     }
   };
 
-  const addBudget = async () => {
+  const saveBudget = async () => {
     if (!db) {
       Alert.alert("Error", "Database not connected. Please retry.");
       useDbStore.setState({
         dbError: new Error(
-          "Database not connected for adding budget. Please retry."
+          "Database not connected for saving budget. Please retry."
         ),
       });
       return;
@@ -114,16 +142,8 @@ const BudgetScreen: React.FC = () => {
       Alert.alert("Validation Error", "Budget amount is required.");
       return;
     }
-
-    const result = await db
-      .select({
-        totalCount: count(),
-      })
-      .from(budgets)
-      .get();
-
-    if (result && result.totalCount >= 3) {
-      Alert.alert("Limit Exceeded", "You can only store a total of 3 budgets.");
+    if (parseFloat(newBudgetAmount) === 0) {
+      Alert.alert("Validation Error", "Budget amount should not be 0.");
       return;
     }
 
@@ -134,191 +154,70 @@ const BudgetScreen: React.FC = () => {
         return;
       }
 
-      const formattedStartDate = formatDateForDb(startDate);
-      const formattedEndDate = formatDateForDb(endDate);
+      const formattedStartDate = formatDateForDb(new Date(startDate), "start");
 
-      const inserted = await db
-        .insert(budgets)
-        .values({
-          totalBudget: parsedAmount,
-          startDate: formattedStartDate,
-          endDate: formattedEndDate,
-          isActive: false,
-        })
-        .returning();
+      const formattedEndDate = formatDateForDb(new Date(endDate), "end");
 
-      console.log("Added budget:", inserted);
-      setNewBudgetAmount("");
-      setStartDate(new Date());
-      setEndDate(new Date());
-      fetchBudgets();
-    } catch (err: any) {
-      alert("Failed to add budget: " + err.message);
-      useDbStore.setState({
-        dbError: new Error(
-          "Failed to add budget due to database issue. Please retry."
-        ),
-      });
-    }
-  };
-
-  const deleteBudget = async (id: number) => {
-    if (!db) {
-      Alert.alert(
-        "Error",
-        "Database is not ready. Please try again or restart the app."
-      );
-      useDbStore.setState({
-        dbError: new Error(
-          "Database not connected for deleting budget. Please retry."
-        ),
-      });
-      return;
-    }
-    Alert.alert(
-      "ဤ Budget ကို ဖျက်မည်",
-      'အကယ်၍ သင်က ဤ Budget ကို အသုံးပြုနေပြီးတော့ ဖျက်လိုက်လျှင် "ယနေ့ ကုန်ကျငွေစာရင်း" တွင် သင် ထည့်သွင်းမှတ်သားထားသည့် စာရင်းများရှိပါက ပျက်သွားပါမည်။ ဖျက်ချင်တာ သေချာပါသလား?',
-      [
-        {
-          text: "မဖျက်တော့ပါ",
-          style: "cancel",
-        },
-        {
-          text: "ဖျက်မည်",
-          onPress: async () => {
-            try {
-              await db.delete(budgets).where(eq(budgets.id, id)).run();
-              await db.delete(todayExpenses);
-              console.log("Deleted budget with ID:", id);
-              fetchBudgets();
-            } catch (err: any) {
-              console.error("Error deleting budget:", err);
-              Alert.alert(
-                "Error",
-                "Failed to delete budget: " + (err.message || "Unknown error.")
-              );
-              useDbStore.setState({
-                dbError: new Error(
-                  "Failed to delete budget due to database issue. Please retry."
-                ),
-              });
-            }
-          },
-          style: "destructive",
-        },
-      ]
-    );
-  };
-
-  const toggleBudgetActiveStatus = async (
-    id: number,
-    currentStatus: boolean
-  ) => {
-    if (!db) {
-      Alert.alert(
-        "Error",
-        "Database is not ready. Please try again or restart the app."
-      );
-      console.error("Attempted to toggle budget status when DB not available.");
-      useDbStore.setState({
-        dbError: new Error(
-          "Database not connected for toggling status. Please retry."
-        ),
-      });
-      return;
-    }
-
-    console.log('budget id: ', id);
-    
-    try {
-      if (currentStatus) {
+      if (currentBudget) {
+        // Update existing budget
         Alert.alert(
-          "ပိတ်သိမ်းမည်",
-          'ဤ Budget ကို ပိတ်သိမ်းလိုက်ပါက "ယနေ့ ကုန်ကျငွေစာရင်း" တွင် သင် ထည့်သွင်းမှတ်သားထားသည့် စာရင်းများရှိပါက ပျက်သွားပါမည်။',
+          "Budget ကို ပြင်ဆင်မည်",
+          "သင်၏ Budget အချက်အလက်များကို ပြင်ဆင်လိုပါသလား?",
           [
             {
-              text: "မပြုလုပ်တော့ပါ",
+              text: "မပြင်ဆင်တော့ပါ",
               style: "cancel",
             },
             {
-              text: "ပိတ်သိမ်းမည်",
+              text: "ပြင်ဆင်မည်",
               onPress: async () => {
-                await db
-                  .update(budgets)
-                  .set({ isActive: false })
-                  .where(eq(budgets.id, id))
-                  .run();
-
-                await db
-                  .update(userBudgets)
-                  .set({ isActive: false })
-                  .where(eq(userBudgets.budgetId, id))
-                  .run();
-
-                await db.delete(todayExpenses).run();
-
-                fetchBudgets();
+                try {
+                  await db
+                    .update(budgets)
+                    .set({
+                      totalBudget: parsedAmount,
+                      startDate: formattedStartDate,
+                      endDate: formattedEndDate,
+                    })
+                    .where(eq(budgets.id, currentBudget.id))
+                    .run();
+                  console.log("Updated budget:", currentBudget.id);
+                  fetchBudget();
+                } catch (err: any) {
+                  Alert.alert(
+                    "Error",
+                    "Failed to update budget: " +
+                      (err.message || "Unknown error.")
+                  );
+                  useDbStore.setState({
+                    dbError: new Error(
+                      "Failed to update budget due to database issue. Please retry."
+                    ),
+                  });
+                }
               },
             },
           ]
         );
       } else {
-        Alert.alert(
-          "ဖွင့်မည်",
-          'ဤ Budget ကို ဖွင့်လျှင် အခြား ဖွင့်ထားသော Budget Setting များရှိလာပါက အလိုအလျှောက် ပိတ်သွားမည်ဖြစ်သည်။ System မှ အလိုအလျှောက် သတ်မှတ်ထားသော Budget Setting များလည်း ယခု သင်ဖွင့်လိုက်သော Budget Setting အတိုင်း ပြောင်းလဲသွားမည်ဖြစ်ပြီး "ယနေ့ ကုန်ကျငွေစာရင်း" တွင် သင်ထည့်သွင်း သတ်မှတ်ထားသော စားရင်များရှိပါက ပျက်သွားပါမည်။',
-          [
-            {
-              text: "မပြုလုပ်တော့ပါ",
-              style: "cancel",
-            },
-            {
-              text: "ဖွင့်မည်",
-              onPress: async () => {
-                await db
-                  .update(budgets)
-                  .set({ isActive: false })
-                  .where(not(eq(budgets.id, id)))
-                  .run();
-
-                await db
-                  .update(userBudgets)
-                  .set({ isActive: false })
-                  .where(not(eq(userBudgets.budgetId, id)))
-                  .run();
-
-                const activeBudget = await db
-                  .update(budgets)
-                  .set({ isActive: true })
-                  .where(eq(budgets.id, id))
-                  .run();
-
-                await db.delete(todayExpenses).run();
-
-                const activeUser = await db.insert(userBudgets).values({
-                  budgetId: id,
-                  isActive: true
-                });
-
-                console.log('start active info===============');
-                console.log('active budget: ', activeBudget);
-                console.log('active user: ', activeUser);                
-                console.log('end active info===============');
-
-                fetchBudgets();
-              },
-            },
-          ]
-        );
+        // Insert new budget
+        const inserted = await db
+          .insert(budgets)
+          .values({
+            totalBudget: parsedAmount,
+            startDate: formattedStartDate,
+            endDate: formattedEndDate,
+            isActive: true, // Automatically activate the first and only budget
+          })
+          .returning();
+        console.log("Added budget:", inserted);
       }
+      fetchBudget();
     } catch (err: any) {
-      console.error("Error toggling budget status:", err);
-      Alert.alert(
-        "Error",
-        "Failed to change budget status: " + (err.message || "Unknown error.")
-      );
+      alert("Failed to save budget: " + err.message);
       useDbStore.setState({
         dbError: new Error(
-          "Failed to toggle budget status due to database issue. Please retry."
+          "Failed to save budget due to database issue. Please retry."
         ),
       });
     }
@@ -331,7 +230,7 @@ const BudgetScreen: React.FC = () => {
     return (
       <View style={styles.container}>
         <ActivityIndicator size="large" color="#0000ff" />
-        <Text>Loading database and budgets...</Text>
+        <Text>Loading database and budget...</Text>
       </View>
     );
   }
@@ -362,9 +261,97 @@ const BudgetScreen: React.FC = () => {
   }
 
   // Main UI when DB is loaded and no errors
+  // return (
+  //   <View style={styles.container}>
+  //     <View style={styles.inputContainer}>
+  //       <Text style={styles.inputLabel}>Total Amount</Text>
+  //       <TextInput
+  //         style={styles.input}
+  //         placeholder="Total Budget"
+  //         placeholderTextColor={"#666666"}
+  //         keyboardType="numeric"
+  //         value={newBudgetAmount}
+  //         onChangeText={setNewBudgetAmount}
+  //       />
+
+  //       {/* Start Date Picker */}
+  //       <View style={styles.fieldWrapper}>
+  //         <Text style={styles.inputLabel}>Start Date</Text>
+  //         <TouchableOpacity
+  //           style={styles.inputWithIcon}
+  //           onPress={() => setShowStartDatePicker(true)}
+  //         >
+  //           <Text style={styles.inputText}>{startDate.toDateString()}</Text>
+  //         </TouchableOpacity>
+  //         {showStartDatePicker && (
+  //           <DateTimePicker
+  //             value={startDate}
+  //             mode="date"
+  //             display={Platform.OS === "ios" ? "spinner" : "default"}
+  //             onChange={(event, selectedDate) =>
+  //               handleDateChange(
+  //                 event,
+  //                 selectedDate,
+  //                 setStartDate,
+  //                 setShowStartDatePicker
+  //               )
+  //             }
+  //           />
+  //         )}
+  //       </View>
+
+  //       {/* End Date Picker */}
+  //       <View style={styles.fieldWrapper}>
+  //         <Text style={styles.inputLabel}>End Date</Text>
+  //         <TouchableOpacity
+  //           style={styles.inputWithIcon}
+  //           onPress={() => setShowEndDatePicker(true)}
+  //         >
+  //           <Text style={styles.inputText}>{endDate.toDateString()}</Text>
+  //         </TouchableOpacity>
+  //         {showEndDatePicker && (
+  //           <DateTimePicker
+  //             value={endDate}
+  //             mode="date"
+  //             display={Platform.OS === "ios" ? "spinner" : "default"}
+  //             onChange={(event, selectedDate) =>
+  //               handleDateChange(
+  //                 event,
+  //                 selectedDate,
+  //                 setEndDate,
+  //                 setShowEndDatePicker
+  //               )
+  //             }
+  //           />
+  //         )}
+  //       </View>
+
+  //       <TouchableOpacity style={styles.submitButton} onPress={saveBudget}>
+  //         <Text style={styles.submitButtonText}>
+  //           {currentBudget ? "Update" : "Add"} Budget
+  //         </Text>
+  //       </TouchableOpacity>
+  //     </View>
+
+  //     {currentBudget && (
+  //       <View style={styles.currentBudgetSection}>
+  //         <Text style={styles.subHeader}>Current Budget:</Text>
+  //         <View style={styles.budgetItem}>
+  //           <Text style={styles.budgetItemText}>
+  //             Amount: {currentBudget.totalBudget.toFixed(2)}
+  //           </Text>
+  //           <Text style={styles.budgetItemText}>
+  //             Period: {currentBudget.startDate} to {currentBudget.endDate}
+  //           </Text>
+  //         </View>
+  //       </View>
+  //     )}
+  //   </View>
+  // );
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container}>
       <View style={styles.inputContainer}>
+        <Text style={styles.inputLabel}>Total Amount</Text>
         <TextInput
           style={styles.input}
           placeholder="Total Budget"
@@ -382,7 +369,6 @@ const BudgetScreen: React.FC = () => {
             onPress={() => setShowStartDatePicker(true)}
           >
             <Text style={styles.inputText}>{startDate.toDateString()}</Text>
-            <Text style={styles.icon}>📅</Text>
           </TouchableOpacity>
           {showStartDatePicker && (
             <DateTimePicker
@@ -409,7 +395,6 @@ const BudgetScreen: React.FC = () => {
             onPress={() => setShowEndDatePicker(true)}
           >
             <Text style={styles.inputText}>{endDate.toDateString()}</Text>
-            <Text style={styles.icon}>📅</Text>
           </TouchableOpacity>
           {showEndDatePicker && (
             <DateTimePicker
@@ -428,53 +413,61 @@ const BudgetScreen: React.FC = () => {
           )}
         </View>
 
-        <TouchableOpacity style={styles.submitButton} onPress={addBudget}>
-          <Text style={styles.submitButtonText}>သိမ်းမည်</Text>
+        {/* New: Budget Limit Amount Input */}
+        <View style={styles.fieldWrapper}>
+          <Text style={styles.inputLabel}>
+            Budget Limit Amount (ဥပမာ: 0.8 သို့မဟုတ် 50000)
+          </Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Budget Limit ပမာဏ ထည့်ပါ"
+            placeholderTextColor={"#666666"}
+            keyboardType="numeric"
+            value={budgetLimitAmount}
+            onChangeText={setBudgetLimitAmount}
+          />
+        </View>
+
+        {/* New: Show Alert on Limit Switch */}
+        <View style={styles.fieldWrapper}>
+          <Text style={styles.inputLabel}>Budget Limit ပြည့်ပါက အသိပေးရန်</Text>
+          <Switch
+            trackColor={{ false: "#767577", true: "#81b0ff" }}
+            thumbColor={showAlertOnLimit ? "#f5dd4b" : "#f4f3f4"}
+            ios_backgroundColor="#3e3e3e"
+            onValueChange={setShowAlertOnLimit}
+            value={showAlertOnLimit}
+          />
+        </View>
+
+        <TouchableOpacity style={styles.submitButton} onPress={saveBudget}>
+          <Text style={styles.submitButtonText}>
+            {currentBudget ? "Update" : "Add"} Budget
+          </Text>
         </TouchableOpacity>
       </View>
 
-      <Text style={styles.subHeader}>Your Budgets:</Text>
-      <FlatList
-        data={budgetList}
-        keyExtractor={(item) => item.id.toString()}
-        renderItem={({ item }) => (
+      {currentBudget && (
+        <View style={styles.currentBudgetSection}>
+          <Text style={styles.subHeader}>Current Budget:</Text>
           <View style={styles.budgetItem}>
             <Text style={styles.budgetItemText}>
-              Amount: {item.totalBudget.toFixed(2)}
+              Amount: {currentBudget.totalBudget.toFixed(2)}
             </Text>
             <Text style={styles.budgetItemText}>
-              Period: {item.startDate} to {item.endDate}
+              Period: {currentBudget.startDate} to {currentBudget.endDate}
             </Text>
-            <Text style={styles.budgetItemText}>
-              Status: {item.isActive ? "Active" : "Inactive"}
-            </Text>
-            <View style={styles.buttonRow}>
-              {/* Active/Inactive Button */}
-              <TouchableOpacity
-                style={[
-                  styles.actionButton,
-                  item.isActive ? styles.activeButton : styles.inactiveButton,
-                ]}
-                onPress={() => toggleBudgetActiveStatus(item.id, item.isActive)}
-              >
-                <Text style={styles.actionButtonText}>
-                  {item.isActive ? "Deactivate" : "Activate"}
-                </Text>
-              </TouchableOpacity>
-
-              {/* Delete Button */}
-              <TouchableOpacity
-                style={[styles.actionButton, styles.deleteButton]}
-                onPress={() => deleteBudget(item.id)}
-              >
-                <Text style={styles.actionButtonText}>Delete</Text>
-              </TouchableOpacity>
-            </View>
+            {/* Display Budget Limit if available */}
+            {true && (
+              <Text style={styles.budgetItemText}>
+                Budget Limit: 3000
+                {true ? " (Alert On)" : " (Alert Off)"}
+              </Text>
+            )}
           </View>
-        )}
-        ListEmptyComponent={<Text>No budgets found. Add one above!</Text>}
-      />
-    </View>
+        </View>
+      )}
+    </ScrollView>
   );
 };
 
@@ -506,7 +499,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 0,
     marginBottom: 20,
     backgroundColor: "transparent",
-    color: '#666666',
+    color: "#666666",
+    lineHeight: 26
   },
   fieldWrapper: {
     marginBottom: 20,
@@ -516,6 +510,7 @@ const styles = StyleSheet.create({
     fontWeight: "500",
     marginBottom: 8,
     color: "#333",
+    lineHeight: 26
   },
   inputWithIcon: {
     flexDirection: "row",
@@ -543,39 +538,10 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     borderWidth: 1,
     borderColor: "#eee",
-    // flexDirection: 'column',
-    // gap: 5,
   },
   budgetItemText: {
     fontSize: 16,
-    marginBottom: 5, // Space between text lines
-  },
-  buttonRow: {
-    flexDirection: "row",
-    justifyContent: "space-around", // Distribute buttons evenly
-    marginTop: 10, // Space above buttons
-  },
-  actionButton: {
-    paddingVertical: 8,
-    paddingHorizontal: 15,
-    borderRadius: 5,
-    minWidth: 100, // Ensure buttons have a minimum width
-    alignItems: "center",
-  },
-  activeButton: {
-    backgroundColor: "#4CAF50", // Green for active/activate
-  },
-  inactiveButton: {
-    backgroundColor: "#FFC107", // Orange for inactive/deactivate
-  },
-  deleteButton: {
-    backgroundColor: "#F44336", // Red for delete
-    marginLeft: 10, // Space between buttons
-  },
-  actionButtonText: {
-    color: "#fff",
-    fontWeight: "bold",
-    fontSize: 14,
+    marginBottom: 5,
   },
   errorText: {
     color: "red",
@@ -584,7 +550,7 @@ const styles = StyleSheet.create({
   },
   submitButton: {
     backgroundColor: "#388e3c",
-    padding: 15,
+    padding: 10,
     borderRadius: 5,
     alignItems: "center",
     marginTop: 30,
@@ -596,7 +562,7 @@ const styles = StyleSheet.create({
     lineHeight: 25,
   },
   retryButton: {
-    backgroundColor: "#007AFF", // Blue color for retry button
+    backgroundColor: "#007AFF",
     padding: 12,
     borderRadius: 8,
     marginTop: 20,
@@ -606,6 +572,12 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 16,
     fontWeight: "bold",
+  },
+  currentBudgetSection: {
+    marginTop: 30,
+    borderTopWidth: 1,
+    borderTopColor: "#eee",
+    paddingTop: 20,
   },
 });
 

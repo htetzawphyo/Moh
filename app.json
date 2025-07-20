@@ -28,6 +28,7 @@
       "output": "static",
       "favicon": "./assets/images/favicon.png"
     },
+    "supportsPushNotifications": true,
     "plugins": [
       "expo-router",
       [
@@ -39,7 +40,8 @@
           "backgroundColor": "#7BD9F6"
         }
       ],
-      "expo-sqlite"
+      "expo-sqlite",
+      "expo-notifications"
     ],
     "experiments": {
       "typedRoutes": true

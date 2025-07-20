@@ -1,56 +1,51 @@
-import calculateDailyBudget from "@/utils/calculateDailyBudget";
 import useCalculateSpentToday from "@/utils/useCalculateSpentToday";
-import useCalculateTotalRemainingBudget from "@/utils/useCalculateTotalRemainingBudget";
+import useCalculateTotalBudgetInfo from "@/utils/useCalculateTotalBudgetInfo";
+import dayjs from "dayjs";
 import { useCallback, useEffect, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
 const BudgetOverview = ({ refreshKey }) => {
-  const fetchRemainingBudget = useCalculateTotalRemainingBudget();
+  const fetchTotalBudgetInfo = useCalculateTotalBudgetInfo();
   const calculateSpentToday = useCalculateSpentToday();
 
   const [totalBudget, setTotalBudget] = useState(0);
-  const [totalRemainingBudget, setTotalRemainingBudget] = useState(0);
-  const [dailyBudget, setDailyBudget] = useState(0);
-  const [dailyRemain, setDailyRemain] = useState(0);
+  const [totalSpentBudget, setTotalSpentBudget] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [todaySpent, setTodaySpent] = useState(0);
-
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
 
   const loadBudgetData = useCallback(async () => {
     try {
       setIsLoading(true);
 
-      const result = await fetchRemainingBudget();
+      const result = await fetchTotalBudgetInfo();
 
       const fetchedTotalBudget = result?.totalBudget || 0;
-      const fetchedRemainingBudget = result?.totalRemainingBudget || 0;
-      const startDate = result?.startDate
-        ? new Date(result.startDate)
-        : new Date();
-      const endDate = result?.endDate ? new Date(result.endDate) : new Date();
+      const fetchedSpentBudget = result?.totalSpent || 0;
 
-      const computedDailyBudget = calculateDailyBudget(
-        fetchedTotalBudget,
-        startDate,
-        endDate
-      );
+      const startDate = result?.startDate || "";
+      const endDate = result?.endDate || "";
+      const formattedStartDate = dayjs(startDate).isValid()
+        ? dayjs(startDate).format("DD-MM-YYYY")
+        : "";
+      const formattedEndDate = dayjs(endDate).isValid()
+        ? dayjs(endDate).format("DD-MM-YYYY")
+        : "";
+      setStartDate(formattedStartDate);
+      setEndDate(formattedEndDate);
 
       const todaySpent = await calculateSpentToday();
       setTodaySpent(todaySpent);
-      const computedDailyRemain = computedDailyBudget - todaySpent;
-      setDailyRemain(Math.max(0, computedDailyRemain));
 
       setTotalBudget(fetchedTotalBudget);
-      setTotalRemainingBudget(fetchedRemainingBudget);
-      setDailyBudget(computedDailyBudget);
-      console.log("daily remain: ", computedDailyRemain);
-
+      setTotalSpentBudget(fetchedSpentBudget);
     } catch (error) {
       console.error("BudgetOverview error:", error);
     } finally {
       setIsLoading(false);
     }
-  }, [fetchRemainingBudget, calculateSpentToday]);
+  }, [fetchTotalBudgetInfo, calculateSpentToday]);
 
   useEffect(() => {
     loadBudgetData();
@@ -77,37 +72,37 @@ const BudgetOverview = ({ refreshKey }) => {
     <View>
       <View style={styles.banner}>
         <Text style={styles.date_label}>{displayDate}</Text>
+
+        <View style={styles.dateRangeContainer}>
+          <View style={styles.dateItem}>
+            <Text style={styles.dateLabel}>📅 Start Date</Text>
+            <Text style={styles.dateValue}>{startDate}</Text>
+          </View>
+          <View style={styles.dateItem}>
+            <Text style={styles.dateLabel}>📅 End Date</Text>
+            <Text style={styles.dateValue}>{endDate}</Text>
+          </View>
+        </View>
+
         <View style={styles.balance}>
-          <Text style={styles.label.total}>စုစုပေါင်း အသုံးစရိတ်</Text>
+          <Text style={styles.label.total}>💰 စုစုပေါင်း အသုံးစရိတ်</Text>
           <Text style={styles.amount}>
             {formatNumberWithCommas(totalBudget)}
           </Text>
         </View>
         <View style={styles.balance}>
-          <Text style={styles.label.remain}>စုစုပေါင်း အသုံးစရိတ်ကျန်ငွေ</Text>
+          <Text style={styles.label.remain}>💸 အသုံးပြုပြီး စုစုပေါင်း</Text>
           <Text style={styles.amount}>
-            {formatNumberWithCommas(totalRemainingBudget)}
+            {formatNumberWithCommas(totalSpentBudget)}
           </Text>
         </View>
       </View>
 
       <View style={styles.cardRow}>
         <View style={styles.card}>
-          <Text style={styles.cardLabel.total}>ယနေ့ အသုံး စရိတ်</Text>
-          <Text style={styles.cardAmount}>
-            {formatNumberWithCommas(dailyBudget)}
-          </Text>
-        </View>
-        <View style={styles.card}>
           <Text style={styles.cardLabel.spent}>ယနေ့ အသုံးပြုပြီး စရိတ်</Text>
           <Text style={styles.cardAmount}>
             {formatNumberWithCommas(todaySpent)}
-          </Text>
-        </View>
-        <View style={styles.card}>
-          <Text style={styles.cardLabel.remain}>ယနေ့ အသုံး စရိတ် ကျန်ငွေ</Text>
-          <Text style={styles.cardAmount}>
-            {formatNumberWithCommas(dailyRemain)}
           </Text>
         </View>
       </View>
@@ -118,43 +113,6 @@ const BudgetOverview = ({ refreshKey }) => {
 export default BudgetOverview;
 
 const styles = StyleSheet.create({
-  banner: {
-    padding: 30,
-    borderBottomLeftRadius: 25,
-    borderBottomRightRadius: 25,
-    backgroundColor: "#2E865F",
-  },
-  balance: {
-    marginTop: 12,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  date_label: {
-    fontSize: 20,
-    fontWeight: "600",
-    color: "#FFFACD",
-    textAlign: "center",
-  },
-  label: {
-    total: {
-      lineHeight: 26,
-      fontSize: 16,
-      fontWeight: "600",
-      color: "#FFFACD",
-    },
-    remain: {
-      lineHeight: 26,
-      fontSize: 16,
-      fontWeight: "600",
-      color: "#FFFACD",
-    },
-  },
-  amount: {
-    fontWeight: "bold",
-    fontSize: 20,
-    color: "#FFFFFF",
-  },
   cardRow: {
     flexDirection: "row",
     justifyContent: "space-around",
@@ -199,5 +157,63 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#1E293B",
     marginTop: 5,
+  },
+  banner: {
+    padding: 20,
+    borderBottomLeftRadius: 25,
+    borderBottomRightRadius: 25,
+    backgroundColor: "#2E865F",
+  },
+  date_label: {
+    fontSize: 22,
+    fontWeight: "700",
+    color: "#FFFACD",
+    textAlign: "center",
+    marginBottom: 16,
+  },
+  dateRangeContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    backgroundColor: "rgba(255,255,255,0.1)",
+    padding: 12,
+    borderRadius: 12,
+    marginBottom: 20,
+  },
+  dateItem: {
+    // flex: 1,
+  },
+  dateLabel: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#FFF",
+    marginBottom: 4,
+  },
+  dateValue: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#FFFACD",
+  },
+  balance: {
+    marginBottom: 14,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  label: {
+    total: {
+      fontSize: 16,
+      fontWeight: "600",
+      color: "#FFF",
+    },
+    remain: {
+      fontSize: 16,
+      fontWeight: "600",
+      color: "#FFF",
+    },
+  },
+  amount: {
+    fontWeight: "bold",
+    fontSize: 20,
+    color: "#FFFFFF",
   },
 });

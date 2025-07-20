@@ -12,6 +12,7 @@ import {
 const Settings = () => {
   const navigateToCategory = () => router.push("/settings/category");
   const navigateToBudget = () => router.push("/settings/budget");
+  const navigateLimitBudget = () => router.push("/settings/limit_budget");
   const navigateToSuggestion = () => router.push("/settings/suggestion");
 
   return (
@@ -24,6 +25,7 @@ const Settings = () => {
         <SettingsCard 
           onPressCategory={navigateToCategory}
           onPressBudget={navigateToBudget}
+          onPressLimitBudget={navigateLimitBudget}
           onPressSuggestion={navigateToSuggestion}
         />
       </View>

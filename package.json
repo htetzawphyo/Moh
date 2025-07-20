@@ -19,6 +19,7 @@
     "@react-navigation/native": "^7.1.6",
     "babel-plugin-inline-import": "^3.0.0",
     "date-fns": "^4.1.0",
+    "dayjs": "^1.11.13",
     "drizzle-orm": "^0.44.2",
     "expo": "~53.0.13",
     "expo-blur": "~14.1.5",
@@ -45,7 +46,8 @@
     "react-native-screens": "~4.11.1",
     "react-native-web": "~0.20.0",
     "react-native-webview": "13.13.5",
-    "zustand": "^5.0.6"
+    "zustand": "^5.0.6",
+    "expo-notifications": "~0.31.4"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",

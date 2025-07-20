@@ -1,22 +1,46 @@
-import { todayExpenses } from "@/database/schema";
+import { expenses } from "@/database/schema";
 import { useDbStore } from "@/store/dbStore";
-import { sum } from "drizzle-orm";
+import { and, gte, lte, sum } from "drizzle-orm";
+
+const getCurrentMyanmarDateRange = () => {
+  const offset = 6.5 * 60 * 60 * 1000;
+  const now = new Date(Date.now() + offset);
+
+  const start = new Date(now);
+  start.setUTCHours(0, 0, 0, 0);
+
+  const end = new Date(now);
+  end.setUTCHours(23, 59, 59, 999);
+
+  return {
+    start: start.toISOString(),
+    end: end.toISOString(),
+  };
+};
 
 const useCalculateSpentToday = () => {
-  const { db } = useDbStore();
+  const { db, dbLoaded } = useDbStore();
 
   const calculateSpentToday = async () => {
+    if (!dbLoaded || !db) {
+      return;
+    }
+
+    const { start, end } = getCurrentMyanmarDateRange();
     try {
       const result = await db
         .select({
-          spentToday: sum(todayExpenses.amount),
+          spentToday: sum(expenses.amount),
         })
-        .from(todayExpenses)
+        .from(expenses)
+        .where(
+          and(gte(expenses.expenseDate, start), lte(expenses.expenseDate, end))
+        )
         .get();
 
       return result ? Number(result.spentToday) || 0 : 0;
     } catch (error) {
-      console.error("Error calculating spentToday:", error);
+      console.error("Error calculating spentToday from expenses table:", error);
       return 0;
     }
   };

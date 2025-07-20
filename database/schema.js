@@ -10,16 +10,6 @@ export const budgets = sqliteTable("budget", {
   isActive: integer("is_active", { mode: "boolean" }).notNull().default(0),
 });
 
-export const userBudgets = sqliteTable("user_budget", {
-  id: integer("user_budget_id", { mode: "number" }).primaryKey({
-    autoIncrement: true,
-  }),
-  budgetId: integer("budget_id")
-    .notNull()
-    .references(() => budgets.id),
-  isActive: integer("is_active", {mode: "boolean"}).notNull().default(0),
-});
-
 export const categories = sqliteTable("category", {
   id: integer("category_id", { mode: "number" }).primaryKey({
     autoIncrement: true,
@@ -32,9 +22,6 @@ export const expenses = sqliteTable("expense", {
   id: integer("expense_id", { mode: "number" }).primaryKey({
     autoIncrement: true,
   }),
-  userBudgetId: integer("user_budget_id")
-  .notNull()
-  .references(() => userBudgets.id),
   title: text("title").notNull(),
   categoryId: integer("category_id")
     .notNull()
@@ -43,17 +30,10 @@ export const expenses = sqliteTable("expense", {
   expenseDate: text("expense_date").notNull(),
 });
 
-export const todayExpenses = sqliteTable("today_expense", {
-  id: integer("today_expense_id", { mode: "number" }).primaryKey({
-    autoIncrement: true,
-  }),
-  userBudgetId: integer("user_budget_id")
-  .notNull()
-  .references(() => userBudgets.id),
-  title: text("title").notNull(),
-  categoryId: integer("category_id")
-    .notNull()
-    .references(() => categories.id),
-  amount: real("amount").notNull(),
-  expenseDate: text("expense_date").notNull(),
+export const budgetLimits = sqliteTable("budget_limits", {
+  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+  isBudgetLimitEnabled: integer("is_budget_limit_enabled", { mode: "boolean" }).default(false),
+  totalBudgetLimitAmount: real("total_budget_limit_amount"),
+  dailyBudgetLimitAmount: real("daily_budget_limit_amount"),
+  showAlertOnPhoneSystem: integer("show_alert_on_phone_system", { mode: "boolean" }).default(false),
 });

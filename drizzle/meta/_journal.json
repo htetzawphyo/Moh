@@ -57,6 +57,20 @@
       "when": 1752422844842,
       "tag": "0007_glossy_beyonder",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1752860536027,
+      "tag": "0008_absurd_sunfire",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "6",
+      "when": 1753000746791,
+      "tag": "0009_friendly_enchantress",
+      "breakpoints": true
     }
   ]
 }

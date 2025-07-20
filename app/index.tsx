@@ -12,6 +12,7 @@ import AddButton from "../components/AddButton";
 import BudgetOverview from "../components/home/BudgetOverview.jsx";
 import ExpenseCard from "../components/home/ExpenseCard";
 import ExpenseModal from "../components/home/ExpenseModal";
+import { registerForPushNotificationsAsync } from "@/utils/notificationHelper";
 
 export default function Home() {
   const [modalVisible, setModalVisible] = useState(false);
@@ -24,6 +25,7 @@ export default function Home() {
   useFocusEffect(
     useCallback(() => {
       handleExpenseAdded();
+      registerForPushNotificationsAsync();
       return () => {};
     }, [])
   );

@@ -9,6 +9,8 @@ import m0004 from './0004_old_blockbuster.sql';
 import m0005 from './0005_uneven_cassandra_nova.sql';
 import m0006 from './0006_mute_banshee.sql';
 import m0007 from './0007_glossy_beyonder.sql';
+import m0008 from './0008_absurd_sunfire.sql';
+import m0009 from './0009_friendly_enchantress.sql';
 
   export default {
     journal,
@@ -20,7 +22,9 @@ m0003,
 m0004,
 m0005,
 m0006,
-m0007
+m0007,
+m0008,
+m0009
     }
   }
   

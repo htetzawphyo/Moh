@@ -1,9 +1,9 @@
-import { budgets, expenses, userBudgets } from "@/database/schema";
+import { budgets, expenses } from "@/database/schema";
 import { useDbStore } from "@/store/dbStore";
-import { eq, sum, and } from "drizzle-orm";
+import { gte, lte, sum, and, sql } from "drizzle-orm";
 import { useCallback } from "react";
 
-const useCalculateTotalRemainingBudget = () => {
+const useCalculateTotalBudgetInfo = () => {
   const { db } = useDbStore();
 
   const calculate = useCallback(async () => {
@@ -11,21 +11,10 @@ const useCalculateTotalRemainingBudget = () => {
       console.warn(
         "Database not initialized, cannot calculate total remaining budget."
       );
-      return 0;
+      return null;
     }
 
     try {
-      const activeUserBudget = await db
-        .select()
-        .from(userBudgets)
-        .where(eq(userBudgets.isActive, 1))
-        .get();
-
-      if (!activeUserBudget) {
-        console.log("No active user budget found.");
-        return 0;
-      }
-
       const budgetDetails = await db
         .select({
           totalBudget: budgets.totalBudget,
@@ -33,12 +22,6 @@ const useCalculateTotalRemainingBudget = () => {
           endDate: budgets.endDate,
         })
         .from(budgets)
-        .where(
-          and(
-            eq(budgets.id, activeUserBudget.budgetId),
-            eq(budgets.isActive, true)
-          )
-        )
         .get();
 
       console.log('budget detail: ', budgetDetails);
@@ -46,9 +29,9 @@ const useCalculateTotalRemainingBudget = () => {
 
       if (!budgetDetails) {
         console.warn(
-          `Budget details not found for budget ID: ${activeUserBudget.budgetId}`
+          `Budget details not found.`
         );
-        return 0;
+        return null;
       }
 
       const totalBudget = Number(budgetDetails.totalBudget);
@@ -58,21 +41,21 @@ const useCalculateTotalRemainingBudget = () => {
           totalSpent: sum(expenses.amount),
         })
         .from(expenses)
-        .where(eq(expenses.userBudgetId, activeUserBudget.id))
+        .where(
+          and( 
+            gte(expenses.expenseDate, budgetDetails.startDate),
+            lte(expenses.expenseDate, budgetDetails.endDate)
+          )
+        )
         .get();
 
       const totalSpent = totalSpentResult
         ? Number(totalSpentResult.totalSpent) || 0
         : 0;
 
-      const totalRemainingBudget = totalBudget - totalSpent;
-
-      // console.log(
-      //   `Total Budget: ${totalBudget}, Total Spent: ${totalSpent}, Total Remaining: ${totalRemainingBudget}`
-      // );
       return {
         totalBudget,
-        totalRemainingBudget,
+        totalSpent,
         startDate: budgetDetails.startDate,
         endDate: budgetDetails.endDate,
       };
@@ -80,9 +63,9 @@ const useCalculateTotalRemainingBudget = () => {
       console.error("Error calculating total remaining budget:", error);
       return 0;
     }
-  }, []);
+  }, [db]);
 
   return calculate;
 };
 
-export default useCalculateTotalRemainingBudget;
+export default useCalculateTotalBudgetInfo;

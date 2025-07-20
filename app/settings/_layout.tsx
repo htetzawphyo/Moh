@@ -43,10 +43,28 @@ export default function SettingsLayout() {
             fontWeight: "bold",
           },
           headerRight: () => (
+            <TouchableOpacity>
+              <MaterialIcons
+                name="settings"
+                size={24}
+                color="black"
+                style={{ marginRight: 10 }}
+              />
+            </TouchableOpacity>
+          ),
+        }}
+      />
+      <Stack.Screen
+        name="limit_budget"
+        options={{
+          headerTitle: "Budget Limit",
+          headerTitleAlign: "center",
+          headerTitleStyle: {
+            fontSize: 20,
+            fontWeight: "bold",
+          },
+          headerRight: () => (
             <TouchableOpacity
-            // onPress={() => {
-            //   router.replace("/settings");
-            // }}
             >
               <MaterialIcons
                 name="settings"
@@ -61,7 +79,6 @@ export default function SettingsLayout() {
       <Stack.Screen
         name="suggestion"
         options={{
-          // headerShown: false
           headerTitle: "Suggestion",
           headerTitleAlign: "center",
           headerTitleStyle: {

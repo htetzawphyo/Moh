@@ -1,8 +1,7 @@
-import { expenses, todayExpenses, userBudgets } from "@/database/schema";
+import { expenses } from "@/database/schema";
 import { useDbStore } from "@/store/dbStore";
-import { format } from "date-fns";
-import { eq } from "drizzle-orm";
 import { useCallback, useState } from "react";
+import { sendLocalNotification } from "./notificationHelper";
 
 const useAddExpense = () => {
   const { db, dbLoaded } = useDbStore();
@@ -10,6 +9,14 @@ const useAddExpense = () => {
   const [addError, setAddError] = useState(null);
   const [addSuccess, setAddSuccess] = useState(false);
 
+  function getCurrentMyanmarTime() {
+    const offset = 6.5 * 60 * 60 * 1000;
+    return new Date(Date.now() + offset).toISOString();
+  }
+
+  let shouldSendAlert = true;
+  let alertMessage = "Your total expenses have reached your budget limit of";
+  
   const addExpense = useCallback(
     async (data) => {
       if (!dbLoaded || !db) {
@@ -17,51 +24,28 @@ const useAddExpense = () => {
         return;
       }
 
+      if(shouldSendAlert){
+        await sendLocalNotification("Test Title", `Test Body "${data.title}"`, 1000);
+      }
+
       setIsAdding(true);
       setAddError(null);
       setAddSuccess(false);
 
       try {
-        const activeUserBudget = await db
-          .select()
-          .from(userBudgets)
-          .where(eq(userBudgets.isActive, true))
-          .get();
-
-        if (!activeUserBudget) {
-          setAddError(
-            new Error("No active budget found. Please activate a budget.")
-          );
-          setIsAdding(false);
-          return;
-        }
-
-        const todayDate = format(new Date(), "yyyy-MM-dd");
+        const currentTime = getCurrentMyanmarTime();
 
         await db
           .insert(expenses)
           .values({
-            userBudgetId: activeUserBudget.id,
             title: data.title,
             categoryId: data.categoryId,
             amount: data.amount,
-            expenseDate: todayDate,
-          })
-          .run();
-
-        await db
-          .insert(todayExpenses)
-          .values({
-            userBudgetId: activeUserBudget.id,
-            title: data.title,
-            categoryId: data.categoryId,
-            amount: data.amount,
-            expenseDate: todayDate,
+            expenseDate: currentTime,
           })
           .run();
 
         setAddSuccess(true);
-        console.log("Expense added successfully to both tables!");
       } catch (error) {
         console.error("Error adding expense:", error);
         setAddError(error instanceof Error ? error : new Error(String(error)));

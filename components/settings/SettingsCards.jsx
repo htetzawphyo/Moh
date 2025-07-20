@@ -1,7 +1,7 @@
-import { MaterialIcons } from "@expo/vector-icons";
+import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
-const SettingsCard = ({ onPressCategory, onPressBudget, onPressSuggestion }) => {
+const SettingsCard = ({ onPressCategory, onPressBudget, onPressLimitBudget, onPressSuggestion }) => {
   return (
     <View>
       <TouchableOpacity style={styles.card} onPress={onPressCategory}>
@@ -37,6 +37,26 @@ const SettingsCard = ({ onPressCategory, onPressBudget, onPressSuggestion }) => 
           <MaterialIcons name="attach-money" size={24} />
           <View>
             <Text style={{ fontSize: 16 }}>Budget</Text>
+          </View>
+        </View>
+        <View>
+          <MaterialIcons name="chevron-right" size={24} />
+        </View>
+      </TouchableOpacity>
+
+      <TouchableOpacity style={styles.card} onPress={onPressLimitBudget}>
+        <View
+          style={{
+            display: "flex",
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 5,
+          }}
+        >
+          <MaterialCommunityIcons name="bell-alert" size={22} />
+          <View>
+            <Text style={{ fontSize: 16 }}>Limit Budget</Text>
           </View>
         </View>
         <View>

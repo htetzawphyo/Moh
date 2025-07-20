@@ -10,7 +10,7 @@ import {
 } from "react-native";
 
 const ExpenseCard = ({ refreshKey }) => {
-  const { expenses, isLoading, error } = useTodayExpenses(refreshKey);
+  const { todayExpenses, isLoading, error } = useTodayExpenses(refreshKey);
   const { categoryList } = useFetchCategories();
 
   const getCategoryInfo = (categoryId) =>
@@ -45,7 +45,7 @@ const ExpenseCard = ({ refreshKey }) => {
     );
   };
 
-  if (!isLoading && expenses.length === 0) {
+  if (!isLoading && todayExpenses.length === 0) {
     return (
       <View style={{ alignItems: "center", marginTop: 40 }}>
         <Text style={styles.emptyText}>ယနေ့အတွက် အသုံးပြုမှုမရှိသေးပါ။</Text>
@@ -67,7 +67,7 @@ const ExpenseCard = ({ refreshKey }) => {
   return (
     <View style={{ flex: 1 }}>
       <FlatList
-        data={expenses}
+        data={todayExpenses}
         renderItem={renderItem}
         keyExtractor={(item) => item.id.toString()}
         showsVerticalScrollIndicator={false}
