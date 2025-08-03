@@ -1,0 +1,34 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "6",
+      "when": 1753891759483,
+      "tag": "0000_yummy_thunderbolt_ross",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1754238082966,
+      "tag": "0001_outgoing_thunderbolts",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1754238290439,
+      "tag": "0002_serious_gressill",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1754240614186,
+      "tag": "0003_tearful_james_howlett",
+      "breakpoints": true
+    }
+  ]
+}

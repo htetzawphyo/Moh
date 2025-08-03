@@ -1,0 +1,1 @@
+ALTER TABLE `budget_limits` DROP COLUMN `daily_budget_limit_amount`;

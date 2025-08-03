@@ -1,50 +1,48 @@
-# Welcome to your Expo app 👋
+## 💰 Moh – Smart Expense Tracker
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+### An expense tracking app built to help you record, manage, and control your daily spending with ease.
 
-## Get started
+### ✨ Features
+#### - 🎯 Set Budgets: Define your budget with flexible start and end dates  
+#### - 🚦 Spending Limits: Stay in control with limits  
+#### - 📳 Get a vibration alert each time an expense is added, if the total spending limit is exceeded.  
+#### - 🤖 Telegram Bot Integration: Get insights and suggestions via chat  
+#### - 📆 Daily Tracking: Log expenses on the go  
+#### - 📊 Expense History: Filter by date, category
 
-1. Install dependencies
+## 📸 App
+### ![Home Screen](./assets/images/Home_Screen.jpg)
 
-   ```bash
-   npm install
-   ```
+## 🚀 Getting Started
 
-2. Start the app
+### 📦 Installation
+git clone https://github.com/htetzawphyo/Moh.git
 
-   ```bash
-   npx expo start
-   ```
+`cd moh`  
+`npm install`  
+`npx drizzle-kit generate`  
 
-In the output, you'll find options to open the app in a
+### ▶️ Run in Development
+#### Make sure you have the Expo Go app installed on your phone
+`npx expo start`  
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+#### Scan the QR code in Expo DevTools using your phone
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+### 📱 Build Production App (EAS)
+#### Configure EAS
+`eas build:configure`  
 
-## Get a fresh project
+### Build for Android
+`eas build --platform android`  
 
-When you're ready, run:
+### Or build for iOS
+`eas build --platform ios`  
 
-```bash
-npm run reset-project
-```
+### ℹ️ For full setup instructions, visit: https://docs.expo.dev/build/introduction/
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+### 🛠 Tech Stack
+#### - ⚛️ React Native
+#### - 🚀 Expo
+#### - 🧠 Zustand (state management)
+#### - 💾 SQLite (local storage)
+#### - 🧬 Drizzle ORM (database abstraction)
