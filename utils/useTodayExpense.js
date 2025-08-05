@@ -31,6 +31,7 @@ const useTodayExpenses = (refreshKey) => {
     }
 
     const { start, end } = getCurrentMyanmarDateRange();
+    console.log("myanmar date range:", start, end);
 
     try {
       setIsLoading(true);

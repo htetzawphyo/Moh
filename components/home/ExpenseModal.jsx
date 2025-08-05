@@ -12,10 +12,12 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
+  TouchableWithoutFeedback,
   View,
+  Keyboard
 } from "react-native";
 
-const ExpenseModal = ({ modalVisible, setModalVisible, onExpenseAdded }) => {
+const ExpenseModal = ({ modalVisible, setModalVisible, onExpenseAdded, onLimitExceeded }) => {
   const [title, setTitle] = useState("");
   const [amount, setAmount] = useState("");
   const [selectedCategory, setSelectedCategory] = useState(null);
@@ -56,73 +58,77 @@ const ExpenseModal = ({ modalVisible, setModalVisible, onExpenseAdded }) => {
       return;
     }
 
-    setModalVisible(false);
-
     const expenseData = {
       title: title,
       categoryId: selectedCategory.id,
       amount: amount,
     };
+    await addExpense(expenseData, onLimitExceeded);
+    setModalVisible(false);
+  };
 
-    await addExpense(expenseData);
+  const closeModal = () => {
+    setModalVisible(false);
+    Keyboard.dismiss();
   };
 
   return (
-    <Modal
-      animationType="fade"
-      transparent={true}
-      visible={modalVisible}
-      onRequestClose={() => setModalVisible(false)}
-    >
-      <View style={styles.overlay}>
-        <View style={styles.sheet}>
-          <View style={styles.dragHandle} />
+    <>
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <TouchableWithoutFeedback onPress={closeModal}>
+          <View style={styles.overlay}>
+            <View style={styles.sheet}>
+              {/* Title */}
+              <Text style={styles.label}>Title</Text>
+              <TextInput
+                value={title}
+                onChangeText={setTitle}
+                placeholder="Enter title"
+                placeholderTextColor={"#666666"}
+                style={styles.input}
+              />
 
-          {/* Title */}
-          <Text style={styles.label}>Title</Text>
-          <TextInput
-            value={title}
-            onChangeText={setTitle}
-            placeholder="Enter title"
-            placeholderTextColor={"#666666"}
-            style={styles.input}
-          />
+              {/* Amount */}
+              <Text style={styles.label}>Amount</Text>
+              <TextInput
+                value={amount}
+                onChangeText={setAmount}
+                placeholder="Enter amount"
+                placeholderTextColor={"#666666"}
+                keyboardType="numeric"
+                style={styles.input}
+              />
 
-          {/* Amount */}
-          <Text style={styles.label}>Amount</Text>
-          <TextInput
-            value={amount}
-            onChangeText={setAmount}
-            placeholder="Enter amount"
-            placeholderTextColor={"#666666"}
-            keyboardType="numeric"
-            style={styles.input}
-          />
+              {/* Category */}
+              <Text style={styles.label}>Category</Text>
+              <TouchableOpacity
+                style={styles.picker}
+                onPress={() => setCategoryModalVisible(true)}
+              >
+                <Text style={styles.pickerText}>
+                  {selectedCategory ? selectedCategory.name : "Select category"}
+                </Text>
+                <MaterialIcons name="arrow-drop-down" size={24} color="#333" />
+              </TouchableOpacity>
 
-          {/* Category */}
-          <Text style={styles.label}>Category</Text>
-          <TouchableOpacity
-            style={styles.picker}
-            onPress={() => setCategoryModalVisible(true)}
-          >
-            <Text style={styles.pickerText}>
-              {selectedCategory ? selectedCategory.name : "Select category"}
-            </Text>
-            <MaterialIcons name="arrow-drop-down" size={24} color="#333" />
-          </TouchableOpacity>
-
-          {/* Action Buttons */}
-          <View style={styles.actions}>
-            <Pressable onPress={() => setModalVisible(false)}>
-              <Text style={styles.cancelText}>Cancel</Text>
-            </Pressable>
-            <Pressable onPress={handleSubmit}>
-              <Text style={styles.saveText}>Save</Text>
-            </Pressable>
+              {/* Action Buttons */}
+              <View style={styles.actions}>
+                <Pressable onPress={() => setModalVisible(false)}>
+                  <Text style={styles.cancelText}>Cancel</Text>
+                </Pressable>
+                <Pressable onPress={handleSubmit}>
+                  <Text style={styles.saveText}>Save</Text>
+                </Pressable>
+              </View>
+            </View>
           </View>
-        </View>
-      </View>
-
+        </TouchableWithoutFeedback>
+      </Modal>
       {/* Category Modal */}
       <Modal
         animationType="slide"
@@ -167,7 +173,7 @@ const ExpenseModal = ({ modalVisible, setModalVisible, onExpenseAdded }) => {
           </View>
         </TouchableOpacity>
       </Modal>
-    </Modal>
+    </>
   );
 };
 
@@ -184,14 +190,6 @@ const styles = StyleSheet.create({
     padding: 20,
     elevation: 10,
     gap: 15,
-  },
-  dragHandle: {
-    width: 40,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: "#ccc",
-    alignSelf: "center",
-    marginBottom: 10,
   },
   label: {
     fontSize: 14,

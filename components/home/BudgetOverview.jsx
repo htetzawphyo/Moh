@@ -1,8 +1,9 @@
+import { useDbStore } from "@/store/dbStore";
 import useCalculateSpentToday from "@/utils/useCalculateSpentToday";
 import useCalculateTotalBudgetInfo from "@/utils/useCalculateTotalBudgetInfo";
 import dayjs from "dayjs";
 import { useCallback, useEffect, useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
 
 const BudgetOverview = ({ refreshKey }) => {
   const fetchTotalBudgetInfo = useCalculateTotalBudgetInfo();
@@ -62,8 +63,8 @@ const BudgetOverview = ({ refreshKey }) => {
 
   if (isLoading) {
     return (
-      <View>
-        <Text>Loading budget...</Text>
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <ActivityIndicator size="large" color="#4CAF83" />
       </View>
     );
   }

@@ -1,5 +1,5 @@
 import { useFocusEffect } from "expo-router";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   Platform,
   SafeAreaView,
@@ -12,11 +12,18 @@ import AddButton from "../components/AddButton";
 import BudgetOverview from "../components/home/BudgetOverview.jsx";
 import ExpenseCard from "../components/home/ExpenseCard";
 import ExpenseModal from "../components/home/ExpenseModal";
-import { registerForPushNotificationsAsync } from "@/utils/notificationHelper";
+import * as Haptics from 'expo-haptics';
 
 export default function Home() {
   const [modalVisible, setModalVisible] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [showWarning, setShowWarning] = useState(false);
+
+  const handleLimitExceeded = useCallback(() => {
+    setShowWarning(true);
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+    setTimeout(() => setShowWarning(false), 3000);
+  }, []);
 
   const handleExpenseAdded = () => {
     setRefreshKey((prev) => prev + 1);
@@ -25,15 +32,21 @@ export default function Home() {
   useFocusEffect(
     useCallback(() => {
       handleExpenseAdded();
-      registerForPushNotificationsAsync();
       return () => {};
     }, [])
   );
 
   return (
     <SafeAreaView style={styles.container}>
+       {showWarning && (
+        <View style={styles.warningBanner}>
+          <Text style={styles.warningText}>
+            သင် သတ်မှတ်ထားသော Limit ကျော်နေပါပြီ။
+          </Text>
+        </View>
+      )}
       <View>
-        <BudgetOverview refreshKey={refreshKey} />
+        <BudgetOverview refreshKey={refreshKey}/>
       </View>
       <View style={styles.moreActionBar}></View>
       <View style={styles.transactions}>
@@ -45,6 +58,7 @@ export default function Home() {
         modalVisible={modalVisible}
         setModalVisible={setModalVisible}
         onExpenseAdded={handleExpenseAdded}
+        onLimitExceeded={handleLimitExceeded}
       />
     </SafeAreaView>
   );
@@ -80,4 +94,28 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#4CAF83",
   },
+
+  warningBanner: {
+    position: "absolute",
+    top: 10,
+    alignSelf: "center",
+    backgroundColor: "#fff3cd",
+    marginTop: 40,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+    elevation: 4,
+    shadowColor: "#000", 
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    zIndex: 999, 
+  },
+  warningText: {
+    color: "#856404", 
+    fontWeight: "500",
+    fontSize: 13,
+    lineHeight: 20,
+  },
+  
 });
