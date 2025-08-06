@@ -75,14 +75,14 @@ import { useDbStore } from "@/store/dbStore";
 import { and, gte, lte, sum } from "drizzle-orm";
 import { useCallback } from "react";
 
-const getCurrentMyanmarDateRange = () => {
+const getMyanmarDateRange = (isoDateStr) => {
   const offset = 6.5 * 60 * 60 * 1000;
-  const now = new Date(Date.now() + offset);
+  const date = new Date(new Date(isoDateStr).getTime() + offset);
 
-  const start = new Date(now);
+  const start = new Date(date);
   start.setUTCHours(0, 0, 0, 0);
 
-  const end = new Date(now);
+  const end = new Date(date);
   end.setUTCHours(23, 59, 59, 999);
 
   return {
@@ -117,8 +117,9 @@ const useCalculateTotalBudgetInfo = () => {
         return null;
       }
 
-      const { totalBudget } = budgetDetails;
-      const { start: startDate, end: endDate } = getCurrentMyanmarDateRange();
+      const { startDate: rawStartDate, endDate: rawEndDate, totalBudget } = budgetDetails;
+      const { start: startDate } = getMyanmarDateRange(rawStartDate);
+      const { end: endDate } = getMyanmarDateRange(rawEndDate);
 
       // Step 2: Calculate total spent within budget range
       const totalSpentResult = await db
