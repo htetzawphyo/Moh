@@ -22,12 +22,11 @@ export default function Home() {
   const handleLimitExceeded = useCallback(() => {
     setShowWarning(true);
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
-    setTimeout(() => setShowWarning(false), 3000);
+    setTimeout(() => setShowWarning(false), 5000);
   }, []);
 
   const handleExpenseAdded = () => {
     setRefreshKey((prev) => prev + 1);
-    console.log("key change...");
   };
   useFocusEffect(
     useCallback(() => {

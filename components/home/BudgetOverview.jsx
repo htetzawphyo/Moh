@@ -1,9 +1,11 @@
-import { useDbStore } from "@/store/dbStore";
 import useCalculateSpentToday from "@/utils/useCalculateSpentToday";
 import useCalculateTotalBudgetInfo from "@/utils/useCalculateTotalBudgetInfo";
 import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
 import { useCallback, useEffect, useState } from "react";
 import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
+
+dayjs.extend(utc);
 
 const BudgetOverview = ({ refreshKey }) => {
   const fetchTotalBudgetInfo = useCalculateTotalBudgetInfo();
@@ -27,12 +29,12 @@ const BudgetOverview = ({ refreshKey }) => {
 
       const startDate = result?.startDate || "";
       const endDate = result?.endDate || "";
-      const formattedStartDate = dayjs(startDate).isValid()
-        ? dayjs(startDate).format("DD-MM-YYYY")
-        : "";
-      const formattedEndDate = dayjs(endDate).isValid()
-        ? dayjs(endDate).format("DD-MM-YYYY")
-        : "";
+
+      const formattedStartDate = dayjs
+        .utc(startDate)
+        .format("DD-MM-YYYY");
+      const formattedEndDate = dayjs.utc(endDate).format("DD-MM-YYYY");
+
       setStartDate(formattedStartDate);
       setEndDate(formattedEndDate);
 

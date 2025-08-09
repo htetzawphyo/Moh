@@ -1,8 +1,12 @@
 import { budgetLimits, budgets, expenses } from "@/database/schema";
 import { useDbStore } from "@/store/dbStore";
+import dayjs from "dayjs";
 import { and, sql } from "drizzle-orm";
 import * as Haptics from "expo-haptics";
 import { useCallback, useState } from "react";
+import { Alert } from "react-native";
+import isBetween from "dayjs/plugin/isBetween";
+dayjs.extend(isBetween);
 
 const useAddExpense = () => {
   const { db, dbLoaded } = useDbStore();
@@ -38,10 +42,34 @@ const useAddExpense = () => {
 
         const activeBudget = budgetResult[0];
         if (!activeBudget) {
-          throw new Error("No active budget found.");
+          console.log("hello no budget");
+          
+          Alert.alert(
+            "No Budget",
+            "Budget သတ်မှတ်ထားခြင်း မရှိသေးပါ။\nSettings > Budget ထဲတွင် Budget အရင်သတ်မှတ်ပေးပါ။"
+          );
+          setIsAdding(false);
+          return;
         }
 
         const { totalBudget, startDate, endDate } = activeBudget;
+        const currentDate = dayjs(currentTime);
+        
+        if (
+          !currentDate.isBetween(
+            dayjs(startDate),
+            dayjs(endDate),
+            "day",
+            "[]"
+          )
+        ) {
+          Alert.alert(
+            "Out of Budget Period",
+            "လက်ရှိနေ့စွဲသည် သတ်မှတ်ထားသော Budget အတွင်း မရှိပါ။"
+          );
+          setIsAdding(false);
+          return;
+        }
 
         // Step 2: Calculate total spent in current active budget duration
         const expenseResult = await db
